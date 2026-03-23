@@ -1,0 +1,1244 @@
+/* ============================================================
+   BASE + RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080808;
+  --text:   #ffffff;
+  --dim:    rgba(230,226,218,0.5);
+  --muted:  rgba(230,226,218,0.25);
+  --faint:  rgba(230,226,218,0.1);
+  --red:    #7c1c1c;
+  --font:   'Space Grotesk', system-ui, sans-serif;
+  --serif:  'Cormorant Garamond', Georgia, serif;
+  --pad:    60px;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+
+
+/* ============================================================
+   GRAIN
+   ============================================================ */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+
+/* ============================================================
+   SPACER
+   ============================================================ */
+#spacer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   TOP NAV — horizontal bar, hidden on hero
+   ============================================================ */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px var(--pad);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+.topnav.hidden {
+  opacity: 0;
+  pointer-events: none !important;
+}
+
+.topnav-title {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: all;
+  cursor: pointer;
+  transition: color 0.25s;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.topnav-title:hover { color: var(--text); }
+
+.topnav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  pointer-events: all;
+}
+
+.tnav-btn {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.tnav-btn:hover { color: var(--text); }
+.tnav-btn.active { color: var(--dim); }
+
+
+/* ============================================================
+   THREE SCROLL TRACKS
+   ============================================================ */
+
+/* Horizontal tracks (phase 1 + 3) */
+#h-track-1, #h-track-3 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  will-change: transform;
+}
+
+/* Vertical track (phase 2) */
+#v-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  will-change: transform;
+}
+
+/* Default z-index — JS overrides per phase */
+#h-track-1 { z-index: 3; }
+#v-track    { z-index: 2; }
+#h-track-3  { z-index: 1; }
+
+
+/* ============================================================
+   PANELS — base
+   ============================================================ */
+.panel {
+  position: relative;
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--pad);
+  background: var(--bg);
+}
+
+.panel-label {
+  position: absolute;
+  bottom: var(--pad);
+  right: var(--pad);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  z-index: 2;
+}
+
+/* Full-bleed background image */
+.panel-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.panel-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.panel-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(8,8,8,0.5);
+}
+.panel-bg-dim::after {
+  background: rgba(8,8,8,0.68);
+}
+
+/* Shared label */
+.content-label {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.body-text {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--dim);
+  max-width: 50ch;
+}
+.body-text + .body-text { margin-top: 18px; }
+.body-text em { font-style: italic; color: var(--text); }
+
+.dot { opacity: 0.35; }
+
+
+/* ============================================================
+   PANEL — HERO
+   Typography rule: Cormorant for display, Space Grotesk for labels
+   ============================================================ */
+.panel-hero {
+  padding: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.62;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8,8,8,0.1) 0%, rgba(8,8,8,0.5) 100%);
+}
+
+/* Centered block: EXPANSION + byline */
+.hero-center {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* EXPANSION — cursor-driven letter-spacing via JS */
+.hero-title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(52px, 8.5vw, 124px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+  white-space: nowrap;
+  line-height: 1;
+  cursor: default;
+  pointer-events: all;
+  /* letter-spacing animated via JS lerp — no CSS transition needed */
+}
+
+/* Logline — Space Grotesk, below title */
+.hero-logline {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 1.6;
+  max-width: 44ch;
+  text-align: center;
+}
+
+/* Bottom strip — Space Grotesk labels */
+.hero-bottom {
+  position: absolute;
+  z-index: 1;
+  bottom: var(--pad);
+  left: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-byline {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(230,226,218,0.35);
+  pointer-events: none;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: var(--pad);
+  right: var(--pad);
+  font-size: 18px;
+  color: var(--muted);
+  z-index: 2;
+  animation: pulse-x 2.4s ease-in-out infinite;
+}
+@keyframes pulse-x {
+  0%, 100% { transform: translateX(0); opacity: 0.25; }
+  50%       { transform: translateX(7px); opacity: 0.55; }
+}
+
+
+/* ============================================================
+   PANEL — SECTION CARD (divider)
+   ============================================================ */
+.panel-card {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-num {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.card-word {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(52px, 10vw, 160px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-word.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.card-section-name {
+  position: absolute;
+  bottom: var(--pad);
+  right: var(--pad);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+
+/* ============================================================
+   PANEL — INTRO (Apartamento-style: words at margins, void center)
+   ============================================================ */
+.panel-intro {
+  background: #000;
+  position: relative;
+}
+
+/* Top-left fragment: first line of logline */
+.intro-frag--tl {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(22px, 3vw, 48px);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+/* Bottom-right fragment: second line of logline */
+.intro-frag--br {
+  position: absolute;
+  bottom: var(--pad);
+  right: var(--pad);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(22px, 3vw, 48px);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  color: var(--text);
+  text-align: left;
+}
+
+/* Section counter — center bottom */
+.intro-counter {
+  position: absolute;
+  bottom: var(--pad);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+}
+
+/* Genre + budget metadata — bottom-left spec block */
+.intro-meta {
+  position: absolute;
+  bottom: var(--pad);
+  left: var(--pad);
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  line-height: 2;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Superscript footnote markers on logline fragments */
+.intro-sup {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.48em;
+  position: relative;
+  bottom: 0.72em;   /* raises baseline to sit at cap line */
+  line-height: 0;   /* doesn't disturb parent line-height */
+  color: var(--text);
+  letter-spacing: 0;
+  margin-left: 5px;
+  cursor: default;
+  pointer-events: all;
+}
+
+/* Image reveal — repositions left or right based on mouse side */
+.intro-img-wrap {
+  position: absolute;
+  top: 50%;
+  width: clamp(288px, 36vw, 528px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.intro-img-wrap {
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.intro-img-wrap.visible {
+  opacity: 1;
+}
+.intro-img-wrap img,
+.intro-img-wrap video {
+  width: 100%;
+  display: block;
+}
+
+
+/* ============================================================
+   PANEL — SYNOPSIS
+   ============================================================ */
+.panel-synopsis {
+  background: #000;
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  position: relative;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Left: video column — 60% */
+.synopsis-video-col {
+  flex: 0 0 60%;
+  position: relative;
+  overflow: hidden;
+}
+
+.synopsis-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75);
+  display: block;
+}
+
+/* Right: text column — 40% */
+.synopsis-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: var(--pad) var(--pad) var(--pad) 40px;
+}
+
+.synopsis-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 36ch;
+}
+
+/* Images — landscape row below synopsis text */
+.synopsis-thumbs {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  height: clamp(100px, 14vh, 160px);
+}
+
+.synopsis-thumb {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.75);
+  transition: filter 0.3s ease;
+}
+
+.synopsis-thumb:hover { filter: brightness(1); }
+
+.synopsis-body {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: clamp(10px, 0.8vw, 13px);
+  line-height: 1.55;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+
+/* ============================================================
+   PANEL — CHARS (3-column character panel)
+   ============================================================ */
+.panel-chars {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 72px; /* clear topnav */
+}
+
+.chars-label {
+  flex-shrink: 0;
+}
+
+.chars-trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: rgba(230,226,218,0.06);
+  flex: 1;
+  min-height: 0;
+}
+
+.char-col {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.char-photo {
+  height: 52%;
+  background: #111;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Placeholder gradient when no photo */
+.char-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #1c1c1c 0%, #0a0a0a 100%);
+  z-index: 0;
+}
+
+.char-photo img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.char-col-text {
+  flex: 1;
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.char-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(16px, 1.4vw, 22px);
+  color: var(--text);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.char-desc {
+  font-size: 11px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
+
+/* ============================================================
+   PANEL — DIRECTOR STATEMENT
+   ============================================================ */
+.panel-dir-statement {
+  position: relative;
+  padding: var(--pad);
+  background: #000;
+  overflow: visible;
+}
+
+/* Video — floats over the body text, top-right */
+/* Three floating videos — logline-sized */
+.dir-vid {
+  position: absolute;
+  width: clamp(220px, 28vw, 420px);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.dir-vid video {
+  width: 100%;
+  display: block;
+  filter: brightness(0.82);
+}
+
+.dir-vid--tr {
+  top: 10%;
+  right: 15%;
+  z-index: 1;
+  width: clamp(264px, 33.6vw, 504px);
+}
+
+.dir-vid--bl {
+  top: 64%;
+  left: -15%;
+  width: clamp(264px, 33.6vw, 504px);
+}
+
+/* Quote — left edge, vertically centered */
+.dir-statement-bl {
+  position: absolute;
+  top: 40%;
+  left: var(--pad);
+  transform: translateY(-50%);
+  max-width: 42%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 2;
+}
+
+/* Body text — right side, between the two videos */
+.dir-statement-body {
+  position: absolute;
+  top: 63%;
+  left: 42%;
+  transform: translateY(-50%);
+  max-width: 29%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 2;
+}
+
+/* CHARACTERS — full bleed video title */
+.panel-chars-video {
+  padding: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.chars-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+.chars-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8,8,8,0.1) 0%, rgba(8,8,8,0.4) 100%);
+}
+
+.chars-video-title {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(52px, 8.5vw, 124px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* CHARACTERS — red bg, 2×2 grid */
+.panel-chars-card {
+  background: var(--red);
+  padding: var(--pad);
+}
+
+/* Character float panel — like intro/dir statement: dark bg, floating image */
+.panel-char-float {
+  background: #000;
+  position: relative;
+  padding: var(--pad);
+}
+
+/* Floating image — centered like logline video */
+.char-float-img {
+  pointer-events: all;
+  overflow: hidden;
+}
+
+.char-float-img--center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(288px, 36vw, 528px);
+  aspect-ratio: 16 / 9;
+}
+
+/* Big serif name — base style */
+.char-float-name {
+  position: absolute;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(22px, 3vw, 48px);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  color: var(--text);
+  z-index: 2;
+}
+
+.char-float-name--tl { top: var(--pad); left: var(--pad); }
+.char-float-name--br { bottom: var(--pad); right: var(--pad); }
+
+/* Body text — base */
+.char-float-bio {
+  max-width: 28%;
+  z-index: 2;
+}
+
+.char-float-bio--br {
+  position: absolute;
+  bottom: var(--pad);
+  right: var(--pad);
+}
+
+.char-float-bio--tl {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.char-float-bio--bl {
+  position: absolute;
+  bottom: var(--pad);
+  left: var(--pad);
+}
+
+/* === VARIATION: Split layout (Esme) — image left, text right === */
+.panel-char-float--split {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+}
+
+.char-split-img {
+  flex: 0 0 55%;
+  position: relative;
+  overflow: hidden;
+}
+
+.char-split-img .char-carousel {
+  position: absolute;
+  inset: 0;
+}
+
+.char-split-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: var(--pad) var(--pad) var(--pad) 40px;
+  gap: 16px;
+  max-width: 40%;
+}
+
+/* === VARIATION: Right-offset image (Parker) === */
+.char-float-img--right {
+  position: absolute;
+  top: 50%;
+  right: 20%;
+  transform: translateY(-50%);
+  width: clamp(288px, 36vw, 528px);
+  aspect-ratio: 16 / 9;
+}
+
+/* === VARIATION: Full-bleed image (Richard) === */
+.panel-char-float--bleed {
+  padding: var(--pad);
+}
+
+.char-bleed-img {
+  position: absolute;
+  inset: 0;
+}
+
+.char-bleed-img .char-carousel {
+  position: absolute;
+  inset: 0;
+}
+
+.char-bleed-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8,8,8,0.85) 0%, rgba(8,8,8,0.15) 55%);
+  z-index: 1;
+}
+
+.char-carousel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #2a0e0e;
+  pointer-events: all;
+}
+
+.char-carousel--placeholder {
+  background: #2a0e0e;
+}
+
+.char-carousel-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.char-carousel-img.is-active {
+  opacity: 1;
+}
+
+.char-pair-name {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: clamp(9px, 0.7vw, 11px);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.char-pair-body {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: clamp(10px, 0.8vw, 13px);
+  line-height: 1.55;
+  color: #000;
+  letter-spacing: 0.01em;
+  max-width: 75%;
+}
+
+/* Old 5th panel — no longer used */
+.panel-dir-body {
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dir-body-content {
+  max-width: 38ch;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dir-statement-label {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: clamp(9px, 0.7vw, 11px);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dir-statement-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: left;
+}
+
+.dir-statement-title {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: clamp(9px, 0.7vw, 11px);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dir-statement-body-text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+
+
+
+/* ============================================================
+   PANEL — CONTENT (synopsis etc.)
+   ============================================================ */
+.panel-content { padding: 0; }
+
+.content-layout {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  max-width: 720px;
+}
+
+.content-body {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ============================================================
+   PANEL — STATEMENT
+   ============================================================ */
+.panel-statement {
+  display: flex;
+  align-items: center;
+}
+
+.statement-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  max-width: 780px;
+}
+
+.statement-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(24px, 3.2vw, 48px);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  border-left: 1px solid var(--faint);
+  padding-left: 28px;
+}
+
+
+/* ============================================================
+   PANEL — VISUAL TREATMENT
+   ============================================================ */
+.panel-visual {
+  display: flex;
+  align-items: flex-end;
+}
+
+.visual-layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 40px;
+  max-width: 680px;
+}
+
+.visual-title {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(56px, 9vw, 130px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.visual-body { max-width: 44ch; }
+
+
+/* ============================================================
+   PANEL — BIO
+   ============================================================ */
+.panel-bio { padding: 0; }
+
+.bio-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(8,8,8,0.85) 0%, rgba(8,8,8,0.06) 55%);
+}
+
+.bio-content {
+  position: absolute;
+  z-index: 2;
+  bottom: var(--pad);
+  left: var(--pad);
+  right: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.bio-names {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(28px, 3.5vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+
+/* ============================================================
+   PANEL — WORK
+   ============================================================ */
+.panel-work {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 36px;
+}
+
+.work-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.work-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: opacity 0.3s;
+}
+.work-card:hover { opacity: 0.78; }
+
+.work-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #111;
+}
+.work-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s ease;
+}
+.work-card:hover .work-img img { transform: scale(1.04); }
+
+.work-title {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.work-meta {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+
+/* ============================================================
+   PANEL — CREDITS
+   ============================================================ */
+.panel-credits {
+  display: flex;
+  align-items: center;
+}
+
+.credits-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 60px;
+  width: 100%;
+  align-items: start;
+  padding-top: 20px;
+}
+
+.credits-heading {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.credits-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.credits-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--faint);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--dim);
+}
+
+.credits-year {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.credits-press-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--faint);
+  transition: opacity 0.25s;
+}
+.credits-press-link:hover { opacity: 0.7; }
+
+.credits-press-outlet {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.credits-press-title {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+.credits-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.credits-contact-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.credits-org {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.credits-contact-name {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 1.65;
+  transition: color 0.2s;
+}
+.credits-contact-name:hover { color: var(--text); }
+
+

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXPANSION — A Film by Alex Fischman Cárdenas & Trout Cohen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div id="spacer"></div>
+  <div class="grain"></div>
+
+  <nav class="topnav hidden">
+    <a class="topnav-title" onclick="scrollToPanel(0); return false;" href="#">EXPANSION</a>
+    <div class="topnav-links">
+      <button class="tnav-btn" data-section="project" onclick="scrollToSection('project')">I — Project</button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════
+       PHASE 1 — HORIZONTAL (Project Description)
+       10 panels: Hero · Intro · S1–S5 · Chars A · Chars B · Statement
+  ══════════════════════════════════════════════ -->
+  <div id="h-track-1">
+
+    <!-- 1. HERO -->
+    <section class="panel panel-hero" data-section="" data-track="1">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto">
+        <source src="../assets/video/cover.mp4" type="video/mp4">
+      </video>
+      <div class="hero-overlay"></div>
+      <div class="hero-center">
+        <h1 class="hero-title">EXPANSION</h1>
+        <p class="hero-byline">A Film by Fisherman &amp; Trout</p>
+      </div>
+      <div class="scroll-hint">→</div>
+    </section>
+
+    <!-- 2. SECTION INTRO: Apartamento-style logline -->
+    <div class="panel panel-intro" data-section="" data-track="1">
+      <p class="intro-frag--tl">A man inherits his<br>estranged father's mansion</p>
+      <p class="intro-frag--br">and the secrets he<br>left&nbsp;inside&nbsp;it.</p>
+      <div class="intro-img-wrap" id="intro-img-wrap">
+        <video autoplay muted loop playsinline>
+          <source src="../assets/video/Intro.mov" type="video/mp4">
+        </video>
+      </div>
+      <span class="intro-meta">Title: Expansion<br>Written and Directed: Fisherman &amp; Trout<br>Psychological Horror<br>Liminal Horror<br>Erotic Thriller<br>$5–10M</span>
+    </div>
+
+    <!-- 3. SYNOPSIS -->
+    <div class="panel panel-synopsis" data-section="project" id="project" data-track="1">
+      <div class="synopsis-video-col">
+        <video class="synopsis-video" autoplay muted loop playsinline preload="auto">
+          <source src="../assets/video/westworld.mov" type="video/mp4">
+        </video>
+      </div>
+      <div class="synopsis-content">
+        <div class="synopsis-text">
+          <p class="dir-statement-title">Synopsis</p>
+          <p class="synopsis-body">After his estranged father's suicide, Jonathan Cameron inherits a destroyed rural mansion. Jon and his wife Esme move in to restore and sell it. But, their plan slowly unravels when Jon discovers a hidden hallway that shouldn't exist. As Jon delves deeper into the maze, he is attacked by masked intruders, haunted by visions of his past, and slowly alienated from everyone he trusts. In the film's climax, Jon's forced to navigate the heart of the labyrinth, where he must finally confront the pain he has spent his entire life avoiding.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. DIRECTOR STATEMENT -->
+    <div class="panel panel-dir-statement" data-section="project" data-track="1">
+      <!-- Two floating videos -->
+      <div class="dir-vid dir-vid--tr">
+        <video autoplay muted loop playsinline preload="auto">
+          <source src="../assets/video/Directors statement.mov" type="video/mp4">
+        </video>
+      </div>
+      <div class="dir-vid dir-vid--bl">
+        <video autoplay muted loop playsinline preload="auto">
+          <source src="../assets/video/safe2_00026057.mov" type="video/mp4">
+        </video>
+      </div>
+      <!-- Label + quote — left side -->
+      <div class="dir-statement-bl">
+        <p class="dir-statement-label">Directors Statement</p>
+        <p class="dir-statement-quote">There are things inside us we'd rather bury than face. Things we hide from ourselves, from our families, from the world. Those things don't disappear. They rot.</p>
+      </div>
+      <!-- Body text — right side, between the two videos -->
+      <div class="dir-statement-body">
+        <p class="synopsis-body">We want to make a movie about living inside a person who is consuming themselves because they're too afraid to look at what's hiding within them. We want it to feel like a nightmare, one constructed the way an architect might design a torture chamber. Claustrophobic, entrapping, filled with danger hiding behind the walls. We should feel almost like Jon's being surveilled. As if somehow, Richard is still watching over him, still pulling the strings.</p>
+      </div>
+    </div>
+
+
+    <!-- 5. CHARACTERS — full bleed video title -->
+    <div class="panel panel-chars-video" data-section="project" data-track="1">
+      <video class="chars-video" autoplay muted loop playsinline preload="auto">
+        <source src="../assets/video/safe1_00052058.mov" type="video/mp4">
+      </video>
+      <div class="chars-video-overlay"></div>
+      <h2 class="chars-video-title">CHARACTERS</h2>
+    </div>
+
+  </div><!-- /#h-track-1 -->
+
+  <!-- v-track and h-track-3 removed — working section by section -->
+  <div id="v-track"></div>
+  <div id="h-track-3"></div>
+
+  <script src="js/main.js?v=10"></script>
+</body>
+</html>
