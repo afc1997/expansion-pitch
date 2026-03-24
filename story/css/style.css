@@ -10,8 +10,8 @@
   --muted:  rgba(230,226,218,0.25);
   --faint:  rgba(230,226,218,0.1);
   --red:    #7c1c1c;
-  --font:   'Space Grotesk', system-ui, sans-serif;
-  --serif:  'Cormorant Garamond', Georgia, serif;
+  --font:   Arial, sans-serif;
+  --serif:  'Times New Roman', serif;
   --pad:    60px;
 }
 
@@ -22,9 +22,40 @@ html, body {
   font-size: 16px;
   line-height: 1.6;
   overflow: hidden;
+  cursor: none;
 }
 
+* { cursor: none !important; }
+
 a { color: inherit; text-decoration: none; }
+
+
+/* ============================================================
+   CUSTOM CURSOR — inverted circle
+   ============================================================ */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease,
+              width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.cursor.visible { opacity: 1; }
+.cursor.hover {
+  width: 20px;
+  height: 20px;
+}
 
 
 /* ============================================================
@@ -379,6 +410,7 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   top: var(--pad);
   left: var(--pad);
+  z-index: 1;
   font-family: var(--serif);
   font-style: italic;
   font-weight: 300;
@@ -394,6 +426,7 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   bottom: var(--pad);
   right: var(--pad);
+  z-index: 1;
   font-family: var(--serif);
   font-style: italic;
   font-weight: 300;
@@ -423,6 +456,7 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   bottom: var(--pad);
   left: var(--pad);
+  z-index: 1;
   font-family: var(--font);
   font-size: 9px;
   font-weight: 300;
@@ -452,17 +486,21 @@ a { color: inherit; text-decoration: none; }
 .intro-img-wrap {
   position: absolute;
   top: 50%;
-  width: clamp(288px, 36vw, 528px);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-.intro-img-wrap {
   left: 50%;
-  transform: translate(-50%, -50%);
+  width: clamp(288px, 36vw, 528px);
+  pointer-events: all;
+  opacity: 0;
+  z-index: 0;
+  will-change: transform;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 0.35s ease,
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .intro-img-wrap.visible {
   opacity: 1;
+}
+.intro-img-wrap:hover {
+  transform: translate(-50%, -50%) scale(1.65);
 }
 .intro-img-wrap img,
 .intro-img-wrap video {
@@ -544,6 +582,35 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.55;
   color: var(--text);
   letter-spacing: 0.01em;
+}
+
+.synopsis-pull {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding-left: 6vw;
+  margin-top: 6vh;
+}
+
+.synopsis-lower {
+  padding-left: 6vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.synopsis-inset-img {
+  width: clamp(80px, 10vw, 140px);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.8);
 }
 
 
@@ -645,9 +712,15 @@ a { color: inherit; text-decoration: none; }
 .dir-vid {
   position: absolute;
   width: clamp(220px, 28vw, 420px);
-  pointer-events: none;
+  pointer-events: all;
   overflow: hidden;
   z-index: 0;
+  will-change: transform;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dir-vid:hover {
+  transform: scale(1.65);
 }
 
 .dir-vid video {
