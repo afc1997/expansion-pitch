@@ -9,10 +9,13 @@
 // ============================================================
 function getPhases() {
   const vw = window.innerWidth, vh = window.innerHeight;
+  const vTrackEl = document.getElementById('v-track');
+  const vTrackH  = vTrackEl ? vTrackEl.scrollHeight : 0;
+  const maxV     = Math.max(0, vTrackH - vh);
   return {
-    P1:  5 * vw,  maxH1: 4 * vw,   // 5 panels (all 100vw), dwell at panel 5
-    P2:  0,       maxV:  0,
-    P3:  0,       maxH3: 0
+    P1:   9.31 * vw,  maxH1: 9.31 * vw,
+    P2:   maxV > 0 ? maxV + vh * 0.5 : 0,  maxV,
+    P3:   0,           maxH3: 0
   };
 }
 
@@ -47,9 +50,12 @@ function scrollToSection(sectionId) {
   const { P1, P2 } = getPhases();
   const vw = window.innerWidth;
   const targets = {
-    project:   vw,        // card panel of h-track-1
-    visual:    P1,        // start of phase 2
-    directors: P1 + P2   // start of phase 3
+    project:            vw,          // Intro panel
+    characters:         vw * 5,     // Jonathan panel
+    setting:            vw * 6.96,  // House panel
+    'visual-treatment': P1,          // Visual Treatment title card
+    visual:             P1,
+    directors:          P1 + P2
   };
   if (targets[sectionId] !== undefined) target = targets[sectionId];
 }
@@ -65,9 +71,10 @@ function updateNav(scrollY) {
   const { P1, P2 } = getPhases();
   const vw = window.innerWidth;
   let active = '';
-  if (scrollY >= P1 + P2) active = 'directors';
-  else if (scrollY >= P1)  active = 'visual';
-  else if (scrollY >= vw)  active = 'project';
+  if (scrollY >= vw * 9.31)      active = 'visual-treatment';
+  else if (scrollY >= vw * 6.96) active = 'setting';
+  else if (scrollY >= vw * 5)    active = 'characters';
+  else if (scrollY >= vw)        active = 'project';
 
   tnavBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.section === active);
@@ -314,6 +321,9 @@ function initDraggables() {
   if (introImg) makeDraggable(introImg, true);
 
   document.querySelectorAll('.dir-vid').forEach(el => makeDraggable(el, false));
+  document.querySelectorAll('.char-panel-img').forEach(el => {
+    makeDraggable(el, el.classList.contains('char-panel-img--centered'));
+  });
 }
 
 
