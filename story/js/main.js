@@ -276,8 +276,88 @@ function initCharCarousels() {
   });
 }
 
+// ============================================================
+// DRAGGABLE — click and move non-full-bleed elements
+// ============================================================
+function makeDraggable(el, centered) {
+  let active = false, ox = 0, oy = 0, dx = 0, dy = 0;
+
+  el.addEventListener('mousedown', e => {
+    active = true;
+    ox = e.clientX - dx;
+    oy = e.clientY - dy;
+    el.style.transition = 'none';
+    el.style.zIndex = '50';
+    el.style.opacity = '0.85';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!active) return;
+    dx = e.clientX - ox;
+    dy = e.clientY - oy;
+    const base = centered ? 'translate(-50%, -50%)' : '';
+    el.style.transform = `${base} translate(${dx}px, ${dy}px)`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!active) return;
+    active = false;
+    el.style.transition = '';
+    el.style.zIndex = '';
+    el.style.opacity = '';
+  });
+}
+
+function initDraggables() {
+  const introImg = document.getElementById('intro-img-wrap');
+  if (introImg) makeDraggable(introImg, true);
+
+  document.querySelectorAll('.dir-vid').forEach(el => makeDraggable(el, false));
+}
+
+
+// ============================================================
+// CUSTOM CURSOR — inverted circle with lerp lag
+// ============================================================
+function initCursor() {
+  const cursor = document.createElement('div');
+  cursor.className = 'cursor';
+  document.body.appendChild(cursor);
+
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let cx = mx, cy = my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    cursor.classList.add('visible');
+  });
+
+  document.addEventListener('mouseleave', () => cursor.classList.remove('visible'));
+
+  // Expand on interactive elements
+  const hoverTargets = 'a, button, [onclick], .dir-vid, .intro-img-wrap, .hero-title, .tnav-btn, .topnav-title';
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest(hoverTargets)) cursor.classList.add('hover');
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest(hoverTargets)) cursor.classList.remove('hover');
+  });
+
+  (function loop() {
+    cx += (mx - cx) * 0.1;
+    cy += (my - cy) * 0.1;
+    cursor.style.transform = `translate(calc(${cx}px - 50%), calc(${cy}px - 50%))`;
+    requestAnimationFrame(loop);
+  })();
+}
+
+
 window.addEventListener('load', () => {
   initSpacer();
+  initCursor();
+  initDraggables();
   // 'load' fires after all resources including fonts — safe to measure immediately
   initTitleHover();
   initIntroSups();
