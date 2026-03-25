@@ -197,7 +197,7 @@ function initSpacer() {
 function lerp(a, b, t) { return a + (b - a) * t; }
 
 function tick() {
-  current = lerp(current, target, 0.095);
+  current = lerp(current, target, 0.12);
 
   const { P1, P2, P3, maxH1, maxV, maxH3 } = getPhases();
 
@@ -209,18 +209,21 @@ function tick() {
   vTrack.style.transform  = `translateY(${-y2}px)`;
   track3.style.transform  = `translateX(${-x3}px)`;
 
-  if (current < P1) {
-    track1.style.zIndex = '3';
-    vTrack.style.zIndex  = '2';
-    track3.style.zIndex  = '1';
-  } else if (current < P1 + P2) {
-    track1.style.zIndex = '2';
-    vTrack.style.zIndex  = '3';
-    track3.style.zIndex  = '1';
-  } else {
-    track1.style.zIndex = '2';
-    vTrack.style.zIndex  = '1';
-    track3.style.zIndex  = '3';
+  // h-track-1 stays on top; v-track and h-track-3 activate only when populated
+  if (P2 > 0 || maxH3 > 0) {
+    if (current < P1) {
+      track1.style.zIndex = '3';
+      vTrack.style.zIndex  = '2';
+      track3.style.zIndex  = '1';
+    } else if (current < P1 + P2) {
+      track1.style.zIndex = '2';
+      vTrack.style.zIndex  = '3';
+      track3.style.zIndex  = '1';
+    } else {
+      track1.style.zIndex = '2';
+      vTrack.style.zIndex  = '1';
+      track3.style.zIndex  = '3';
+    }
   }
 
   updateNav(current);
