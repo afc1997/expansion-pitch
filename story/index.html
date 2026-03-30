@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=30" />
+  <link rel="stylesheet" href="css/style.css?v=43" />
 </head>
 <body>
 
@@ -24,6 +24,7 @@
       <button class="tnav-btn" data-section="visual-treatment" onclick="scrollToSection('visual-treatment')">Visual Treatment</button>
     </div>
   </nav>
+  <div class="progress-bar" id="progress-bar"></div>
 
   <!-- ══════════════════════════════════════════════
        PHASE 1 — HORIZONTAL (Project Description)
@@ -143,12 +144,12 @@
         </div>
       </div>
       <div class="char-panel-img" style="left: 40%; top: 35%;">
-        <img src="../assets/images/Parker.png" alt="Parker">
+        <img src="../assets/images/New Parker.png" alt="Parker">
       </div>
     </div>
 
     <!-- 9. RICHARD — text bottom -->
-    <div class="panel panel-character" data-section="project" data-track="1">
+    <div class="panel panel-character panel-richard" data-section="project" data-track="1">
       <div class="char-text-block char-text-block--bottom">
         <p class="char-panel-name">Richard</p>
         <div class="char-panel-bio">
@@ -157,7 +158,7 @@
         </div>
       </div>
       <div class="char-panel-img" style="left: 40%; top: 12%;">
-        <img src="../assets/images/Richard.avif" alt="Richard Cameron">
+        <img src="../assets/images/New Richard.png" alt="Richard Cameron">
       </div>
     </div>
 
@@ -178,7 +179,9 @@
         <img src="../assets/images/House 2.jpg" alt="The House">
       </div>
       <div class="house-diptych-img">
-        <img src="../assets/images/House 3.png" alt="The House">
+        <video autoplay muted loop playsinline preload="auto">
+          <source src="../assets/video/Construction Vibe/montagediy.mov" type="video/mp4">
+        </video>
       </div>
     </div>
 
@@ -202,11 +205,226 @@
       <h2 class="vt-title">Visual Treatment</h2>
     </div>
 
+    <!-- 14. TONE -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Tone</p>
+        <p class="synopsis-body">We're drawing from the look of <em>Birth</em>, <em>The Shining</em>, <em>Rosemary's Baby</em>, <em>Funny Games</em>, <em>Safe</em>, <em>Taxi Driver</em>. These are films that invite us into the internal minds of their heroes while presenting a bleak, observational, expressive view of an impossible situation. They ground their surrealism and convince us that these are real people simply dealing with something they can't explain. Our goal is to make the audience feel what Jon feels. Trapped, suspicious, unable to trust the people closest to them.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><img src="../assets/images/_Aftersun - 2022.png" alt="Aftersun (2022)"><span class="vt-caption">Aftersun — 2022</span></div>
+        <div class="vt-thumb"><img src="../assets/images/Mickey 17 - 2025.png" alt="Mickey 17 (2025)"><span class="vt-caption">Mickey 17 — 2025</span></div>
+        <div class="vt-thumb"><img src="../assets/images/The Third Generation - 1979.png" alt="The Third Generation (1979)"><span class="vt-caption">The Third Generation — 1979</span></div>
+      </div>
+    </div>
+
+    <!-- 15. CAMERA -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Camera</p>
+        <p class="synopsis-body">Our camera should feel mechanical. It's always controlled movement or completely static. It never moves handheld. We're isolating Jon from everyone around him, creating a me vs them atmosphere. We imagine a digital camera. No grain. Large depth of field. Infrared for night scenes. This is a movie that takes place largely at night, and we want the darkness to feel real. Like something's lurking in what can't be seen. Jealousy, distrust, fear. Our characters rarely speak their feelings, but they're incredibly present throughout the film. Our camera needs to find those moments and convey them to the audience without words.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00076655.mov" type="video/mp4"></video><span class="vt-caption">Camera Reference</span></div>
+        <div class="vt-thumb"><img src="../assets/images/Jeanne Dielman, 23, quai du Commerce, 1080 Bruxelles - 1976.png" alt="Jeanne Dielman (1976)"><span class="vt-caption">Jeanne Dielman — 1976</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/safe1_00052058.mov" type="video/mp4"></video><span class="vt-caption">Safe — 1995</span></div>
+      </div>
+    </div>
+
+    <!-- 16. PRODUCTION DESIGN -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Production Design</p>
+        <p class="synopsis-body">We want to lean into the jagged edges, the broken walls, the plastic tarps covering the furniture. This movie wants you to feel uneasy, and the production design of a house under construction should do exactly that. Mess, clutter, boxes, leaking roofs. Richard's presence lives in his objects, the frantic maze drawings, the rifle, the house itself.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Construction Vibe/Timeline 1 copydiy 1.mov" type="video/mp4"></video><span class="vt-caption">Construction Reference</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Construction Vibe/Timeline 1 copydiy 2.mov" type="video/mp4"></video><span class="vt-caption">Construction Reference</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Construction Vibe/Timeline 1 copydiy 4.mov" type="video/mp4"></video><span class="vt-caption">Construction Reference</span></div>
+      </div>
+    </div>
+
+    <!-- 17. MUSIC -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Music</p>
+        <p class="synopsis-body">We want something abrasive and atonal, built from drones and dissonant strings that sit underneath every scene like something is wrong. The music should feel almost industrial. As if it were built from the sounds of construction.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00025470.mov" type="video/mp4"></video><span class="vt-caption">Music Reference</span></div>
+        <div class="vt-thumb"><img src="../assets/images/Balming Tiger - Moving Forward.png" alt="Balming Tiger"><span class="vt-caption">Balming Tiger — Moving Forward</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00074446.mov" type="video/mp4"></video><span class="vt-caption">Music Reference</span></div>
+      </div>
+    </div>
+
+    <!-- 18. SOUND DESIGN -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Sound Design</p>
+        <p class="synopsis-body">We want the soundscape to have a big dynamic range. We keep things quiet so the loud moments feel violent. An impossibly quiet corridor… completely silent. Then a gunshot so loud it rings through the rest of the scene. When we enter the maze, the soundscape shifts entirely. The outside world disappears. What's left is Jon's breathing, his footsteps, and a liminal droning sound.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00079497.mov" type="video/mp4"></video><span class="vt-caption">Sound Reference</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00109044.mov" type="video/mp4"></video><span class="vt-caption">Sound Reference</span></div>
+        <div class="vt-thumb"><img src="../assets/images/Nostalghia - 1984 (6).png" alt="Nostalghia (1984)"><span class="vt-caption">Nostalghia — 1984</span></div>
+      </div>
+    </div>
+
+    <!-- 19. EDIT -->
+    <div class="panel panel-vt-archive" data-section="visual-treatment" data-track="1">
+      <div class="vt-archive-text">
+        <p class="dir-statement-title">Edit</p>
+        <p class="synopsis-body">We take our time. Shots linger. Scenes breathe. The audience doesn't get the relief of a cut when they want one. We hold on faces too long. We let silence do the work. When we do cut, the cuts are hard. The edit mirrors Jon's psychology. Early on, the rhythm is steady. As Jon deteriorates, the cuts become disorienting.</p>
+      </div>
+      <div class="vt-archive-grid">
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00052103.mov" type="video/mp4"></video><span class="vt-caption">Edit Reference</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00183856.mov" type="video/mp4"></video><span class="vt-caption">Edit Reference</span></div>
+        <div class="vt-thumb"><video autoplay muted loop playsinline preload="auto"><source src="../assets/video/Clips00061980.mov" type="video/mp4"></video><span class="vt-caption">Edit Reference</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         DIRECTOR PROFILE
+    ══════════════════════════════════════════════ -->
+
+    <!-- 20. DIRECTOR PROFILE — TITLE CARD -->
+    <div class="panel panel-profile-title" data-section="visual-treatment" data-track="1">
+      <img class="profile-bg" src="../assets/images/about-photo.jpg" alt="">
+      <div class="profile-bg-overlay"></div>
+      <h2 class="profile-heading">Director Profile</h2>
+    </div>
+
+    <!-- 21. ABOUT -->
+    <div class="panel panel-profile-about" data-section="visual-treatment" data-track="1">
+      <div class="profile-about-text">
+        <p class="dir-statement-title">About Us</p>
+        <p class="synopsis-body">Alex Fischman C&aacute;rdenas and Trout Cohen are a writer-director duo who met at a urinal on their first day at NYU. Since then, they've collaborated on narrative projects blending genre storytelling with surreal themes. Their work has earned Vimeo Staff Picks and screened at festivals such as Sundance, Clermont-Ferrand, Sitges, and AFI Fest.</p>
+      </div>
+      <div class="profile-about-img">
+        <img src="../assets/images/about-photo.jpg" alt="Fisherman & Trout">
+      </div>
+    </div>
+
+    <!-- 22. WORK SAMPLES -->
+    <div class="panel panel-profile-work" data-section="visual-treatment" data-track="1">
+      <div class="profile-work-text">
+        <p class="dir-statement-title">Work Samples</p>
+      </div>
+      <div class="profile-work-cards">
+        <a class="profile-card" href="https://vimeo.com/1034785756/6a958389dd?fl=pl&fe=sh" target="_blank">
+          <div class="profile-card-img"><img src="../assets/images/pika-poster.jpg" alt="PIKA"></div>
+          <div class="profile-card-info">
+            <p class="profile-card-title">&iexcl;PIKA! (The Itch)</p>
+            <p class="profile-card-meta">2025 &middot; Narrative Short &middot; 17 min</p>
+            <p class="profile-card-festivals">Sundance, Sitges</p>
+          </div>
+        </a>
+        <a class="profile-card" href="https://vimeo.com/1101244533?fl=pl&fe=sh" target="_blank">
+          <div class="profile-card-img"><img src="../assets/images/ovejas-card.jpg" alt="Ovejas y Lobos"></div>
+          <div class="profile-card-info">
+            <p class="profile-card-title">Ovejas y Lobos (Sheep and Wolves)</p>
+            <p class="profile-card-meta">2024 &middot; Narrative Short &middot; 17 min</p>
+            <p class="profile-card-festivals">Clermont-Ferrand, AFI Fest, Palm Springs, Raindance</p>
+          </div>
+        </a>
+      </div>
+      <div class="profile-work-link">
+        <p class="profile-link-label">Additional Work</p>
+        <a href="https://www.alexfischman.com" target="_blank" class="profile-link">www.alexfischman.com</a>
+      </div>
+    </div>
+
+    <!-- 23. PRESS -->
+    <div class="panel panel-profile-press" data-section="visual-treatment" data-track="1">
+      <div class="profile-press-col">
+        <p class="dir-statement-title">Press</p>
+        <div class="profile-press-list">
+          <a href="https://dailyutahchronicle.com/2026/01/26/the-making-of-pika/" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">Utah Chronicle</span>
+            <span class="profile-press-headline">Alex Fischman C&aacute;rdenas and Trout Cohen on the making of '&iexcl;PIKA!'</span>
+          </a>
+          <a href="https://directorsnotes.com/2026/01/22/sundance2026-best-shorts/" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">Directors Notes</span>
+            <span class="profile-press-headline">13 Standout Short Films from Sundance 2026</span>
+          </a>
+          <a href="https://www.youtube.com/watch?v=jyfEDCv7kyY" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">Sundance</span>
+            <span class="profile-press-headline">Meet the Artist 2026: Alex Fischman C&aacute;rdenas and Trout Cohen on "&iexcl;PIKA!"</span>
+          </a>
+          <a href="https://lbbonline.com/news/Ovejas-y-Lobos-and-the-Mothers-Who-Never-Stopped-Searching" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">LBB</span>
+            <span class="profile-press-headline">'Ovejas y Lobos' and the Mothers Who Never Stopped Searching</span>
+          </a>
+          <a href="https://elcomercio.pe/luces/cine/alex-fischman-el-cine-para-mi-es-una-oportunidad-de-sanar-mis-heridas-noticia/" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">El Comercio</span>
+            <span class="profile-press-headline">Alex Fischman: "El cine para m&iacute; es una oportunidad de sanar mis heridas"</span>
+          </a>
+          <a href="https://nofilmschool.com/2015/06/17-year-old-director-made-one-best-short-films-you-will-see-year" target="_blank" class="profile-press-item">
+            <span class="profile-press-source">No Film School</span>
+            <span class="profile-press-headline">This 17 Year Old Director Made One of the Best Short Films You Will See This Year</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 24. RECOGNITION -->
+    <div class="panel panel-profile-recognition" data-section="visual-treatment" data-track="1">
+      <div class="profile-recog-col">
+        <p class="dir-statement-title">Recognition</p>
+        <div class="profile-recog-list">
+          <p class="profile-recog-item"><span class="profile-recog-year">2026</span> Sundance Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2025</span> Sitges Fantastic Film Festival of Catalonia &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2025</span> Vimeo Staff Pick</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> Clermont-Ferrand Int'l Short Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> Raindance Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> Palm Springs Int'l Short Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> DokuFest, Int'l Documentary &amp; Short Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> AFI Fest &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> NYU First Run Film Festival &mdash; Best Director &amp; Best Short Film</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> National Board of Review &mdash; Student Grant, Norman T. Strauss Award</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> Lima International Film Festival &mdash; Audience Award &amp; Special Jury Award</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> Shorts Mexico, Int'l Short Film Festival &mdash; Best Short Film</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2024</span> FCZ, Zaragoza Film Festival &mdash; Best Short Film</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2022</span> Vimeo Staff Pick</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2021</span> Vimeo Staff Pick</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2019</span> Aesthetica Short Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2016</span> Moscow International Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2015</span> Starz Denver Film Festival &mdash; Official Selection</p>
+          <p class="profile-recog-item"><span class="profile-recog-year">2015</span> Hollyshorts Film Festival &mdash; Official Selection</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 25. CONTACT -->
+    <div class="panel panel-profile-contact" data-section="visual-treatment" data-track="1">
+      <div class="profile-contact-col">
+        <p class="dir-statement-title">Contact</p>
+        <div class="profile-contact-blocks">
+          <div class="profile-contact-block">
+            <p class="profile-contact-org">William Morris Endeavor</p>
+            <p class="profile-contact-person">Marco Alvarez <a href="mailto:MAlvarez@wmeagency.com">MAlvarez@wmeagency.com</a></p>
+            <p class="profile-contact-person">Jacey Baldovino <a href="mailto:JBaldovino@wmeagency.com">JBaldovino@wmeagency.com</a></p>
+          </div>
+          <div class="profile-contact-block">
+            <p class="profile-contact-org">Industry Entertainment</p>
+            <p class="profile-contact-person">Rachel Linehan <a href="mailto:rachel@industryentertainment.com">rachel@industryentertainment.com</a></p>
+            <p class="profile-contact-person">Steve Crawford <a href="mailto:stephenc@industryentertainment.com">stephenc@industryentertainment.com</a></p>
+          </div>
+          <div class="profile-contact-block">
+            <p class="profile-contact-org">Direct</p>
+            <p class="profile-contact-person">Alex Fischman C&aacute;rdenas <a href="mailto:alexfischmancardenas@gmail.com">alexfischmancardenas@gmail.com</a></p>
+            <p class="profile-contact-person">Trout Cohen <a href="mailto:troutcohenfilms@gmail.com">troutcohenfilms@gmail.com</a></p>
+          </div>
+        </div>
+        <a href="https://www.fishermantrout.com" target="_blank" class="profile-link profile-link--site">www.fishermantrout.com</a>
+      </div>
+    </div>
+
   </div><!-- /#h-track-1 -->
 
   <div id="v-track"></div>
   <div id="h-track-3"></div>
 
-  <script src="js/main.js?v=31"></script>
+  <script src="js/main.js?v=34"></script>
 </body>
 </html>

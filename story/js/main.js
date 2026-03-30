@@ -9,11 +9,14 @@
 // ============================================================
 function getPhases() {
   const vw = window.innerWidth, vh = window.innerHeight;
+  const track1El = document.getElementById('h-track-1');
+  const track1W  = track1El ? track1El.scrollWidth : 0;
+  const maxH1    = Math.max(0, track1W - vw);
   const vTrackEl = document.getElementById('v-track');
   const vTrackH  = vTrackEl ? vTrackEl.scrollHeight : 0;
   const maxV     = Math.max(0, vTrackH - vh);
   return {
-    P1:   9.31 * vw,  maxH1: 9.31 * vw,
+    P1:   maxH1,  maxH1,
     P2:   maxV > 0 ? maxV + vh * 0.5 : 0,  maxV,
     P3:   0,           maxH3: 0
   };
@@ -66,6 +69,15 @@ function scrollToSection(sectionId) {
 // ============================================================
 const tnavBtns = document.querySelectorAll('.tnav-btn');
 const topnav   = document.querySelector('.topnav');
+
+const progressBar = document.getElementById('progress-bar');
+
+function updateProgress(scrollY) {
+  const max = getMaxScroll();
+  const pct = max > 0 ? (scrollY / max) * 100 : 0;
+  if (progressBar) progressBar.style.width = pct + '%';
+  if (progressBar) progressBar.classList.toggle('hidden', scrollY < window.innerWidth * 0.6);
+}
 
 function updateNav(scrollY) {
   const { P1, P2 } = getPhases();
@@ -228,8 +240,22 @@ function tick() {
 
   updateNav(current);
   updateCards(current);
+  updateProgress(current);
+  updateVtParallax(current);
 
   requestAnimationFrame(tick);
+}
+
+function updateVtParallax(scrollPos) {
+  const thumbs = document.querySelectorAll('.vt-thumb img, .vt-thumb video');
+  const vw = window.innerWidth;
+  thumbs.forEach((el) => {
+    const rect = el.closest('.vt-thumb').getBoundingClientRect();
+    const center = (rect.left + rect.right) / 2;
+    const ratio = (center / vw - 0.5) * 2;
+    const shift = ratio * -15;
+    el.style.transform = `translateX(${shift}%)`;
+  });
 }
 
 function initSynopsisSlides() {
