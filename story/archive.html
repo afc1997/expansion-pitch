@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXPANSION — Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+      overflow-y: auto;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      mix-blend-mode: difference;
+      pointer-events: none;
+      z-index: 10000;
+      opacity: 0;
+      transition: width 0.25s, height 0.25s, opacity 0.2s;
+    }
+    .cursor.visible { opacity: 1; }
+    .cursor.hover { width: 40px; height: 40px; }
+
+    /* Nav */
+    .archive-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .archive-nav a {
+      color: #fff;
+      text-decoration: none;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .archive-nav a:hover { opacity: 1; }
+    .archive-nav-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      opacity: 1 !important;
+    }
+
+    /* Cylinder scene */
+    .cylinder-scene {
+      width: 100%;
+      perspective: 1200px;
+      perspective-origin: 50% 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 120px 0 80px;
+    }
+
+    .cylinder-row {
+      transform-style: preserve-3d;
+      width: 0; height: 0;
+      position: relative;
+      margin: 10px 0;
+    }
+
+    .cylinder-item {
+      position: absolute;
+      width: 200px;
+      height: 140px;
+      left: -100px;
+      top: -70px;
+      overflow: hidden;
+      backface-visibility: hidden;
+      cursor: pointer;
+      transition: filter 0.3s;
+    }
+    .cylinder-item:hover { filter: brightness(1.2); }
+
+    .cylinder-item img,
+    .cylinder-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cylinder-item-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 20px 8px 6px;
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .cylinder-item:hover .cylinder-item-label { opacity: 1; }
+
+    /* Video play indicator */
+    .cylinder-item--video::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 8px 0 8px 14px;
+      border-color: transparent transparent transparent rgba(255,255,255,0.6);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .cylinder-item--video:hover::after { opacity: 0; }
+
+    /* Lightbox */
+    .lb { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; }
+    .lb.is-open { display: flex; }
+    .lb-close { position: absolute; top: 24px; right: 32px; background: none; border: none; color: #fff; font-size: 32px; cursor: pointer; z-index: 201; opacity: 0.6; }
+    .lb-close:hover { opacity: 1; }
+    .lb-content { max-width: 88vw; max-height: 85vh; }
+    .lb-content img, .lb-content video { max-width: 88vw; max-height: 85vh; display: block; }
+    .lb-caption { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 12px; letter-spacing: 0.06em; color: rgba(255,255,255,0.5); }
+
+    /* Loader */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease;
+    }
+    .loader.done { opacity: 0; pointer-events: none; }
+    .loader-inner { text-align: center; }
+    .loader-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-size: 28px;
+      letter-spacing: 0.35em;
+      margin-bottom: 24px;
+    }
+    .loader-bar {
+      width: 180px;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin: 0 auto;
+    }
+    .loader-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      transition: width 0.2s;
+    }
+    .loader-pct {
+      margin-top: 12px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      opacity: 0.4;
+    }
+
+    /* Film grain */
+    .grain {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 128px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading screen -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <p class="loader-title">EXPANSION</p>
+      <div class="loader-bar"><div class="loader-bar-fill" id="loader-fill"></div></div>
+      <p class="loader-pct" id="loader-pct">0%</p>
+    </div>
+  </div>
+
+  <div class="grain"></div>
+
+  <nav class="archive-nav">
+    <a href="index.html" class="archive-nav-title">EXPANSION</a>
+    <a href="index.html">Back to Pitch</a>
+  </nav>
+
+  <div class="cylinder-scene" id="scene"></div>
+
+  <!-- Lightbox -->
+  <div class="lb" id="lb">
+    <button class="lb-close" id="lb-close">&times;</button>
+    <div class="lb-content" id="lb-content"></div>
+    <p class="lb-caption" id="lb-caption"></p>
+  </div>
+
+  <script>
+  // ── Media catalog ──
+  const MEDIA = [
+    // Images
+    { type: 'image', src: '../assets/images/_Aftersun - 2022.png', label: 'Aftersun — 2022' },
+    { type: 'image', src: '../assets/images/03 (864).jpg', label: 'Reference' },
+    { type: 'image', src: '../assets/images/09_saraceno_cloudcities_entwurfszeichnung.jpg', label: 'Cloud Cities' },
+    { type: 'image', src: '../assets/images/14218-320546-02-09_891x.webp', label: 'Architecture Reference' },
+    { type: 'image', src: '../assets/images/1670845-inline-inline-composition-of-circular-resonance-close-2.jpg', label: 'Circular Resonance' },
+    { type: 'image', src: '../assets/images/234901791ed114b5a7016600d282ba6c.jpg', label: 'Reference' },
+    { type: 'image', src: '../assets/images/30012b0a6cbbf8d781931b5fea6ebf91a177784a.png', label: 'Reference' },
+    { type: 'image', src: '../assets/images/404717_4493118681695_1931085207_n.png', label: 'Reference' },
+    { type: 'image', src: '../assets/images/79a0396b97bb9dbc79ed3c9e1fae5f06.jpg', label: 'Reference' },
+    { type: 'image', src: '../assets/images/A Different Man - 2024.png', label: 'A Different Man — 2024' },
+    { type: 'image', src: '../assets/images/Architectural-Drawing_Multi-Gen-Front-1170x658.png', label: 'Architectural Drawing' },
+    { type: 'image', src: '../assets/images/Balming Tiger - Moving Forward.png', label: 'Balming Tiger — Moving Forward' },
+    { type: 'image', src: '../assets/images/Beau Is Afraid - 2023 (2).png', label: 'Beau Is Afraid — 2023' },
+    { type: 'image', src: '../assets/images/Beyond the Fog - 2023.png', label: 'Beyond the Fog — 2023' },
+    { type: 'image', src: '../assets/images/Boogeyman - 2005.png', label: 'Boogeyman — 2005' },
+    { type: 'image', src: '../assets/images/Brian-Cox.webp', label: 'Brian Cox' },
+    { type: 'image', src: '../assets/images/Cobra - 1986.png', label: 'Cobra — 1986' },
+    { type: 'image', src: '../assets/images/Deep Red - 1975 (1).png', label: 'Deep Red — 1975' },
+    { type: 'image', src: '../assets/images/Deep Red - 1975 (3).png', label: 'Deep Red — 1975' },
+    { type: 'image', src: '../assets/images/Esme.png', label: 'Esme' },
+    { type: 'image', src: '../assets/images/floor-plan.png', label: 'Floor Plan' },
+    { type: 'image', src: '../assets/images/Free in Deed - 2015.png', label: 'Free in Deed — 2015' },
+    { type: 'image', src: '../assets/images/ground-floor-plan-2.jpg', label: 'Ground Floor Plan' },
+    { type: 'image', src: '../assets/images/Harry Potter and the Half-Blood Prince - 2009.png', label: 'Harry Potter — 2009' },
+    { type: 'image', src: '../assets/images/Home Alone 2_ Lost in New York - 1992.png', label: 'Home Alone 2 — 1992' },
+    { type: 'image', src: '../assets/images/House 2.jpg', label: 'House' },
+    { type: 'image', src: '../assets/images/House 3.png', label: 'House' },
+    { type: 'image', src: '../assets/images/house-floor-plan-shape-maze-260nw-2525342781.webp', label: 'Maze Floor Plan' },
+    { type: 'image', src: '../assets/images/House.png', label: 'House' },
+    { type: 'image', src: '../assets/images/images.jpeg', label: 'Reference' },
+    { type: 'image', src: '../assets/images/Incendies - 2010 (1).png', label: 'Incendies — 2010' },
+    { type: 'image', src: '../assets/images/infinity-maze-21842356.webp', label: 'Infinity Maze' },
+    { type: 'image', src: '../assets/images/insane-architecture.jpg', label: 'Architecture Reference' },
+    { type: 'image', src: '../assets/images/Jeanne Dielman, 23, quai du Commerce, 1080 Bruxelles - 1976.png', label: 'Jeanne Dielman — 1976' },
+    { type: 'image', src: '../assets/images/JON 1.png', label: 'Jonathan' },
+    { type: 'image', src: '../assets/images/JON 2.png', label: 'Jonathan' },
+    { type: 'image', src: '../assets/images/JON 3.png', label: 'Jonathan' },
+    { type: 'image', src: '../assets/images/Last Tango in Paris - 1972 (1).png', label: 'Last Tango in Paris — 1972' },
+    { type: 'image', src: '../assets/images/MAMS_S1_UT_1_221115_LEEDAV_00135R_CropC_3000.webp', label: 'Reference' },
+    { type: 'image', src: '../assets/images/Mandy - 2018.png', label: 'Mandy — 2018' },
+    { type: 'image', src: '../assets/images/Maze.png', label: 'The Maze' },
+    { type: 'image', src: '../assets/images/Mickey 17 - 2025.png', label: 'Mickey 17 — 2025' },
+    { type: 'image', src: '../assets/images/New Parker.png', label: 'Parker' },
+    { type: 'image', src: '../assets/images/New Richard.png', label: 'Richard' },
+    { type: 'image', src: '../assets/images/Nostalghia - 1984 (6).png', label: 'Nostalghia — 1984' },
+    { type: 'image', src: '../assets/images/Nostalghia - 1984.png', label: 'Nostalghia — 1984' },
+    { type: 'image', src: '../assets/images/Parker.png', label: 'Parker' },
+    { type: 'image', src: '../assets/images/pdf-study-set-example-details.gif', label: 'Reference' },
+    { type: 'image', src: '../assets/images/PLAN.jpg', label: 'Plan' },
+    { type: 'image', src: '../assets/images/PORTFOLIO_FINAL_-21_o.jpg', label: 'Portfolio Reference' },
+    { type: 'image', src: '../assets/images/Red Island - 2023.png', label: 'Red Island — 2023' },
+    { type: 'image', src: '../assets/images/Severance - The You You Are.png', label: 'Severance' },
+    { type: 'image', src: '../assets/images/Short Cuts - 1993.png', label: 'Short Cuts — 1993' },
+    { type: 'image', src: '../assets/images/Synopsis 1.png', label: 'Synopsis' },
+    { type: 'image', src: '../assets/images/Synopsis 2.png', label: 'Synopsis' },
+    { type: 'image', src: '../assets/images/Synopsis 3.png', label: 'Synopsis' },
+    { type: 'image', src: '../assets/images/Synopsis 4.png', label: 'Synopsis' },
+    { type: 'image', src: '../assets/images/The Fountain - 2006.png', label: 'The Fountain — 2006' },
+    { type: 'image', src: '../assets/images/The King\'s Speech - 2010.png', label: 'The King\'s Speech — 2010' },
+    { type: 'image', src: '../assets/images/The Legend of Ochi - 2025.png', label: 'The Legend of Ochi — 2025' },
+    { type: 'image', src: '../assets/images/The Lovers on the Bridge - 1999.png', label: 'The Lovers on the Bridge — 1999' },
+    { type: 'image', src: '../assets/images/The Needle - 1989.png', label: 'The Needle — 1989' },
+    { type: 'image', src: '../assets/images/The Painted Bird - 2019 (1).png', label: 'The Painted Bird — 2019' },
+    { type: 'image', src: '../assets/images/The Third Generation - 1979.png', label: 'The Third Generation — 1979' },
+    { type: 'image', src: '../assets/images/Tokyo Drifter - 1966.png', label: 'Tokyo Drifter — 1966' },
+    { type: 'image', src: '../assets/images/Tout feu tout flamme - 1982 (1).png', label: 'Tout feu tout flamme — 1982' },
+    { type: 'image', src: '../assets/images/Tout feu tout flamme - 1982 (2).png', label: 'Tout feu tout flamme — 1982' },
+    { type: 'image', src: '../assets/images/Tout feu tout flamme - 1982.png', label: 'Tout feu tout flamme — 1982' },
+    { type: 'image', src: '../assets/images/treewow-treehouse-monoarchi-architecture-xband-club-zhongcun-china_dezeen_plans-1-852x591.jpg', label: 'Treehouse Architecture' },
+    { type: 'image', src: '../assets/images/unusual-floor-plans-1-852x572.jpg', label: 'Unusual Floor Plans' },
+    { type: 'image', src: '../assets/images/V_ The Final Battle - Part Two.png', label: 'V: The Final Battle' },
+    { type: 'image', src: '../assets/images/Whip It - 2009.png', label: 'Whip It — 2009' },
+    { type: 'image', src: '../assets/images/X - 2022.png', label: 'X — 2022' },
+    // Visual Treatment images
+    { type: 'image', src: '../assets/Visual Treatment/Camera/The Fountain - 2006.png', label: 'The Fountain — 2006' },
+    { type: 'image', src: '../assets/Visual Treatment/Directors Statement.png', label: 'Directors Statement' },
+    { type: 'image', src: '../assets/Visual Treatment/Production Desing/Free in Deed - 2015.png', label: 'Free in Deed — 2015' },
+    { type: 'image', src: '../assets/Visual Treatment/Production Desing/House 3.png', label: 'House' },
+    { type: 'image', src: '../assets/Visual Treatment/Production Desing/Tout feu tout flamme - 1982 (1).png', label: 'Tout feu tout flamme — 1982' },
+    { type: 'image', src: '../assets/Visual Treatment/Tone/Nostalghia - 1984 (6).png', label: 'Nostalghia — 1984' },
+    // Videos — src for thumbnail, hq for lightbox
+    { type: 'video', src: '../assets/video/compressed/111_00018854.mp4', hq: '../assets/video/hq/111_00018854.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/111_00105595.mp4', hq: '../assets/video/hq/111_00105595.mp4', label: 'Sound Reference' },
+    { type: 'video', src: '../assets/video/compressed/111_00191415.mp4', hq: '../assets/video/hq/111_00191415.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00025470.mp4', hq: '../assets/video/hq/Clips00025470.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00026843.mp4', hq: '../assets/video/hq/Clips00026843.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00052103.mp4', hq: '../assets/video/hq/Clips00052103.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00061980.mp4', hq: '../assets/video/hq/Clips00061980.mp4', label: 'Camera Reference' },
+    { type: 'video', src: '../assets/video/compressed/Clips00065684.mp4', hq: '../assets/video/hq/Clips00065684.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00074446.mp4', hq: '../assets/video/hq/Clips00074446.mp4', label: 'Edit Reference' },
+    { type: 'video', src: '../assets/video/compressed/Clips00076361.mp4', hq: '../assets/video/hq/Clips00076361.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00076655.mp4', hq: '../assets/video/hq/Clips00076655.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00079497.mp4', hq: '../assets/video/hq/Clips00079497.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00109044.mp4', hq: '../assets/video/hq/Clips00109044.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/Clips00183856.mp4', hq: '../assets/video/hq/Clips00183856.mp4', label: 'Reference Clip' },
+    { type: 'video', src: '../assets/video/compressed/edit1.mp4', label: 'Edit Reference' },
+    { type: 'video', src: '../assets/video/compressed/edit3.mp4', label: 'Edit Reference' },
+    { type: 'video', src: '../assets/video/compressed/montagediy.mp4', hq: '../assets/video/hq/montagediy.mp4', label: 'Construction Montage' },
+    { type: 'video', src: '../assets/video/compressed/safe1_00052058.mp4', hq: '../assets/video/hq/safe1_00052058.mp4', label: 'Safe — Reference' },
+    { type: 'video', src: '../assets/video/compressed/safe2_00026057.mp4', hq: '../assets/video/hq/safe2_00026057.mp4', label: 'Safe — Reference' },
+    { type: 'video', src: '../assets/video/compressed/Timeline 1 copydiy 1.mp4', hq: '../assets/video/hq/Timeline 1 copydiy 1.mp4', label: 'Construction Reference' },
+    { type: 'video', src: '../assets/video/compressed/Timeline 1 copydiy 2.mp4', hq: '../assets/video/hq/Timeline 1 copydiy 2.mp4', label: 'Construction Reference' },
+    { type: 'video', src: '../assets/video/compressed/Timeline 1 copydiy 4.mp4', hq: '../assets/video/hq/Timeline 1 copydiy 4.mp4', label: 'Construction Reference' },
+    { type: 'video', src: '../assets/video/compressed/tone-new.mp4', hq: '../assets/video/hq/tone-new.mp4', label: 'Tone Reference' },
+    { type: 'video', src: '../assets/video/compressed/Tone1.mp4', hq: '../assets/video/hq/Tone1.mp4', label: 'Tone Reference' },
+    { type: 'video', src: '../assets/video/compressed/Tone2.mp4', hq: '../assets/video/hq/Tone2.mp4', label: 'Tone Reference' },
+    { type: 'video', src: '../assets/video/compressed/Tone3.mp4', hq: '../assets/video/hq/Tone3.mp4', label: 'Tone Reference' },
+    { type: 'video', src: '../assets/video/compressed/westworld.mp4', hq: '../assets/video/hq/westworld.mp4', label: 'Westworld Reference' },
+  ];
+
+  // ── Loading screen ──
+  const loader = document.getElementById('loader');
+  const loaderFill = document.getElementById('loader-fill');
+  const loaderPct = document.getElementById('loader-pct');
+  const sceneEl = document.getElementById('scene');
+  sceneEl.style.opacity = '0';
+
+  function preloadMedia() {
+    const items = MEDIA.filter(m => m.type === 'image');
+    const vidItems = MEDIA.filter(m => m.type === 'video');
+    const total = items.length + vidItems.length;
+    let loaded = 0;
+
+    function tick() {
+      loaded++;
+      const pct = Math.round((loaded / total) * 100);
+      loaderFill.style.width = pct + '%';
+      loaderPct.textContent = pct + '%';
+      if (loaded >= total) finishLoading();
+    }
+
+    items.forEach(item => {
+      const img = new Image();
+      img.onload = tick;
+      img.onerror = tick;
+      img.src = item.src;
+    });
+
+    // For videos, just count them as loaded (they lazy-load on hover)
+    vidItems.forEach(() => tick());
+  }
+
+  function finishLoading() {
+    sceneEl.style.transition = 'opacity 0.6s ease';
+    sceneEl.style.opacity = '1';
+    loader.classList.add('done');
+    setTimeout(() => { loader.style.display = 'none'; }, 700);
+  }
+
+  // ── Shuffle for visual variety ──
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  shuffle(MEDIA);
+
+  // ── Build cylinder ──
+  const scene = document.getElementById('scene');
+  const ITEMS_PER_ROW = 8;
+  const ITEM_W = 220;
+  const GAP = 20;
+  const circumference = ITEMS_PER_ROW * (ITEM_W + GAP);
+  const RADIUS = circumference / (2 * Math.PI);
+  const ANGLE_STEP = 360 / ITEMS_PER_ROW;
+  const rows = [];
+
+  for (let i = 0; i < MEDIA.length; i += ITEMS_PER_ROW) {
+    const rowItems = MEDIA.slice(i, i + ITEMS_PER_ROW);
+    const rowEl = document.createElement('div');
+    rowEl.className = 'cylinder-row';
+    rowEl.style.height = '160px';
+    rowEl.style.width = '0';
+
+    // Offset alternate rows for visual interest
+    const rowOffset = (i / ITEMS_PER_ROW) % 2 === 0 ? 0 : ANGLE_STEP / 2;
+
+    rowItems.forEach((item, j) => {
+      const angle = j * ANGLE_STEP + rowOffset;
+      const el = document.createElement('div');
+      el.className = 'cylinder-item' + (item.type === 'video' ? ' cylinder-item--video' : '');
+      el.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+      el.dataset.index = i + j;
+
+      if (item.type === 'image') {
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.src = item.src;
+        img.alt = item.label;
+        el.appendChild(img);
+      } else {
+        const vid = document.createElement('video');
+        vid.muted = true;
+        vid.loop = true;
+        vid.playsInline = true;
+        vid.preload = 'none';
+        vid.src = item.src;
+        el.appendChild(vid);
+        el.addEventListener('mouseenter', () => { vid.play().catch(() => {}); });
+        el.addEventListener('mouseleave', () => { vid.pause(); });
+      }
+
+      const label = document.createElement('span');
+      label.className = 'cylinder-item-label';
+      label.textContent = item.label;
+      el.appendChild(label);
+
+      el.addEventListener('click', () => openLightbox(i + j));
+      rowEl.appendChild(el);
+    });
+
+    scene.appendChild(rowEl);
+    rows.push({ el: rowEl, angle: 0 });
+  }
+
+  // Start preloading
+  preloadMedia();
+
+  // ── Auto-rotation + drag ──
+  let autoSpeed = 0.15;
+  let dragSpeed = 0;
+  let isDragging = false;
+  let lastX = 0;
+
+  document.addEventListener('mousedown', e => {
+    if (e.target.closest('.lb.is-open') || e.target.closest('.archive-nav')) return;
+    isDragging = true;
+    lastX = e.clientX;
+    dragSpeed = 0;
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    dragSpeed = dx * 0.3;
+    lastX = e.clientX;
+  });
+
+  document.addEventListener('mouseup', () => { isDragging = false; });
+
+  function animate() {
+    if (!isDragging) {
+      dragSpeed *= 0.95;
+    }
+    const speed = autoSpeed + dragSpeed;
+
+    rows.forEach((row, i) => {
+      // Alternate rows rotate in opposite directions, slight speed variation
+      const dir = i % 2 === 0 ? 1 : -1;
+      const variation = 1 + (i % 3) * 0.08;
+      row.angle += speed * dir * variation;
+      row.el.style.transform = `rotateY(${row.angle}deg)`;
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // ── Lightbox ──
+  const lb = document.getElementById('lb');
+  const lbContent = document.getElementById('lb-content');
+  const lbCaption = document.getElementById('lb-caption');
+  const lbClose = document.getElementById('lb-close');
+
+  function openLightbox(idx) {
+    const item = MEDIA[idx];
+    lbContent.innerHTML = '';
+
+    if (item.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = item.hq || item.src;
+      vid.controls = true;
+      vid.autoplay = true;
+      vid.playsInline = true;
+      lbContent.appendChild(vid);
+    } else {
+      const img = document.createElement('img');
+      img.src = item.src;
+      lbContent.appendChild(img);
+    }
+
+    lbCaption.textContent = item.label;
+    lb.classList.add('is-open');
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('is-open');
+    const vid = lbContent.querySelector('video');
+    if (vid) { vid.pause(); vid.src = ''; }
+    lbContent.innerHTML = '';
+  }
+
+  lbClose.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLightbox();
+  });
+
+  // ── Custom cursor ──
+  const cursor = document.createElement('div');
+  cursor.className = 'cursor';
+  document.body.appendChild(cursor);
+  let mx = 0, my = 0, cx = 0, cy = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.classList.add('visible');
+  });
+  document.addEventListener('mouseleave', () => cursor.classList.remove('visible'));
+
+  const hoverSel = 'a, button, .cylinder-item';
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest(hoverSel)) cursor.classList.add('hover');
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest(hoverSel)) cursor.classList.remove('hover');
+  });
+
+  (function cursorLoop() {
+    cx += (mx - cx) * 0.1;
+    cy += (my - cy) * 0.1;
+    cursor.style.transform = `translate(calc(${cx}px - 50%), calc(${cy}px - 50%))`;
+    requestAnimationFrame(cursorLoop);
+  })();
+  </script>
+</body>
+</html>

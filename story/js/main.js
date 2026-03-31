@@ -419,7 +419,12 @@ function initLightbox() {
       if (id) return { type: 'youtube', src: id[1] };
     }
     const video = thumb.querySelector('video source');
-    if (video) return { type: 'video', src: video.getAttribute('src') };
+    if (video) {
+      // Use HQ source for lightbox if available, fall back to thumbnail source
+      const hq = thumb.dataset.hqSrc;
+      const src = hq || video.getAttribute('src') || video.dataset.src;
+      return { type: 'video', src };
+    }
     const img = thumb.querySelector('img');
     if (img) return { type: 'image', src: img.getAttribute('src') };
     return null;
