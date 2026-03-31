@@ -442,6 +442,71 @@ function initCarousels() {
 
 
 // ============================================================
+// CUSTOM AUDIO PLAYERS
+// ============================================================
+function initAudioPlayers() {
+  document.querySelectorAll('.audio-player').forEach(player => {
+    const src = player.dataset.src;
+    const playBtn = player.querySelector('.ap-play');
+    const track = player.querySelector('.ap-track');
+    const progress = player.querySelector('.ap-progress');
+    const timeEl = player.querySelector('.ap-time');
+    const audio = new Audio();
+    audio.preload = 'none';
+    audio.src = src;
+
+    let loaded = false;
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (!loaded) { audio.load(); loaded = true; }
+      if (audio.paused) {
+        // Pause all other players
+        document.querySelectorAll('.audio-player').forEach(p => {
+          if (p !== player && p._audio && !p._audio.paused) {
+            p._audio.pause();
+            p.querySelector('.ap-play').innerHTML = '&#9654;';
+          }
+        });
+        audio.play();
+        playBtn.innerHTML = '&#10074;&#10074;';
+      } else {
+        audio.pause();
+        playBtn.innerHTML = '&#9654;';
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        timeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.innerHTML = '&#9654;';
+      progress.style.width = '0%';
+      timeEl.textContent = '0:00';
+    });
+
+    track.addEventListener('click', e => {
+      if (!loaded) { audio.load(); loaded = true; }
+      const rect = track.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      if (audio.duration) audio.currentTime = pct * audio.duration;
+    });
+
+    player._audio = audio;
+  });
+}
+
+
+// ============================================================
 // INIT
 // ============================================================
 window.addEventListener('load', () => {
@@ -451,6 +516,7 @@ window.addEventListener('load', () => {
   initLightbox();
   initLazyVideos();
   initCarousels();
+  initAudioPlayers();
   initReveal();
   initNav();
 });
