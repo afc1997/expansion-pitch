@@ -1,16 +1,152 @@
 // ============================================================
+// PHASE MATH
+// h-track-1: 6 panels (Hero, Intro, Synopsis, CharsA, CharsB, Statement)
+// v-track:    7 panels (Card, Tone, Camera, ProdDesign, Music, Sound, Edit)
+// h-track-3:  4 panels (Card, Bio, Work, Credits)
+//
+// P = scroll distance for phase (includes 1-unit dwell on last panel so it's readable)
+// max = maximum track offset (= (panels-1) × unit)
+// ============================================================
+function getPhases() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const track1El = document.getElementById('h-track-1');
+  const track1W  = track1El ? track1El.scrollWidth : 0;
+  const maxH1    = Math.max(0, track1W - vw);
+  const vTrackEl = document.getElementById('v-track');
+  const vTrackH  = vTrackEl ? vTrackEl.scrollHeight : 0;
+  const maxV     = Math.max(0, vTrackH - vh);
+  return {
+    P1:   maxH1,  maxH1,
+    P2:   maxV > 0 ? maxV + vh * 0.5 : 0,  maxV,
+    P3:   0,           maxH3: 0
+  };
+}
+
+
+// ============================================================
+// VIRTUAL SCROLL — driven by horizontal trackpad / wheel
+// ============================================================
+let target  = 0;
+let current = 0;
+
+function getMaxScroll() {
+  const { P1, P2, P3 } = getPhases();
+  return P1 + P2 + P3;
+}
+
+window.addEventListener('wheel', e => {
+  if (document.body.dataset.lightboxOpen) return;
+  e.preventDefault();
+  // Prefer horizontal delta; fall back to vertical (standard mouse wheel)
+  const delta = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  target = Math.max(0, Math.min(target + delta, getMaxScroll()));
+}, { passive: false });
+
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function scrollToPanel(index) {
+  target = Math.max(0, Math.min(index * window.innerWidth, getMaxScroll()));
+}
+
+function scrollToSection(sectionId) {
+  const { P1, P2 } = getPhases();
+  const vw = window.innerWidth;
+  const targets = {
+    project:            vw * 2,      // Synopsis panel
+    characters:         vw * 4,      // Characters title card
+    setting:            vw * 9,      // House panel
+    'visual-treatment': vw * 12,     // Visual Treatment title card
+    visual:             vw * 12,
+    about:              vw * 19,     // About title card
+    directors:          P1 + P2
+  };
+  if (targets[sectionId] !== undefined) target = targets[sectionId];
+}
+
+
+// ============================================================
+// NAV — highlight active section, hide on hero panel
+// ============================================================
+const tnavBtns = document.querySelectorAll('.tnav-btn');
+const topnav   = document.querySelector('.topnav');
+
+const progressBar = document.getElementById('progress-bar');
+
+function updateProgress(scrollY) {
+  const max = getMaxScroll();
+  const pct = max > 0 ? (scrollY / max) * 100 : 0;
+  if (progressBar) progressBar.style.width = pct + '%';
+  if (progressBar) progressBar.classList.toggle('hidden', scrollY < window.innerWidth * 0.6);
+}
+
+function updateNav(scrollY) {
+  const { P1, P2 } = getPhases();
+  const vw = window.innerWidth;
+  let active = '';
+  if (scrollY >= vw * 18.5)      active = 'about';
+  else if (scrollY >= vw * 9.31) active = 'visual-treatment';
+  else if (scrollY >= vw * 6.96) active = 'setting';
+  else if (scrollY >= vw * 5)    active = 'characters';
+  else if (scrollY >= vw)        active = 'project';
+
+  tnavBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === active);
+  });
+
+  // Hide nav while on hero panel (first panel)
+  if (topnav) topnav.classList.toggle('hidden', scrollY < vw * 0.6);
+}
+
+
+// ============================================================
+// CARD WORDS — fade in when card is centred in its track
+// ============================================================
+function updateCards(scrollY) {
+  const { P1, P2, P3, maxH1, maxV, maxH3 } = getPhases();
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  document.querySelectorAll('#h-track-1 .panel-card').forEach(card => {
+    const word = card.querySelector('.card-word');
+    if (!word) return;
+    const trackX = Math.min(scrollY, maxH1);
+    word.classList.toggle('visible', Math.abs(trackX - card.offsetLeft) < vw * 0.75);
+  });
+
+  document.querySelectorAll('#v-track .panel-card').forEach(card => {
+    const word = card.querySelector('.card-word');
+    if (!word) return;
+    const trackY = Math.max(0, Math.min(scrollY - P1, maxV));
+    word.classList.toggle('visible', Math.abs(trackY - card.offsetTop) < vh * 0.75);
+  });
+
+  document.querySelectorAll('#h-track-3 .panel-card').forEach(card => {
+    const word = card.querySelector('.card-word');
+    if (!word) return;
+    const trackX = Math.max(0, Math.min(scrollY - P1 - P2, maxH3));
+    word.classList.toggle('visible', Math.abs(trackX - card.offsetLeft) < vw * 0.75);
+  });
+}
+
+
+// ============================================================
 // HERO TITLE — dynamic letter-spacing to fill screen width
 // ============================================================
 const heroTitle = document.querySelector('.hero-title');
 
 function calcExpansionLetterSpacing() {
   if (!heroTitle) return;
+
+  // Measure using canvas so we don't disturb the live animation
   const cs       = getComputedStyle(heroTitle);
-  const fontSize = cs.fontSize;
+  const fontSize = cs.fontSize; // e.g. "96px"
   const canvas   = document.createElement('canvas');
   const ctx      = canvas.getContext('2d');
-  ctx.font = `300 ${fontSize} Times New Roman, serif`;
+  ctx.font = `300 ${fontSize} Cormorant Garamond, Georgia, serif`;
   const naturalW = ctx.measureText('EXPANSION').width;
+
+  // "EXPANSION" = 9 chars; letter-spacing is applied after each character
   const ls = (window.innerWidth - naturalW) / 9;
   document.documentElement.style.setProperty('--ls-open', Math.max(0, ls) + 'px');
 }
@@ -21,22 +157,27 @@ function initTitleHover() {
 
   const fontSize = parseFloat(getComputedStyle(heroTitle).fontSize);
   const lsClose  = -0.02 * fontSize;
+
   let targetLs  = lsClose;
   let currentLs = lsClose;
+
   heroTitle.style.letterSpacing = lsClose + 'px';
 
+  // Inertia loop — currentLs chases targetLs with lag
   (function lerpLoop() {
     currentLs += (targetLs - currentLs) * 0.015;
     heroTitle.style.letterSpacing = currentLs + 'px';
     requestAnimationFrame(lerpLoop);
   })();
 
+  // X + Y both drive expansion — reaches full width at ~65% of diagonal
   document.addEventListener('mousemove', e => {
     const lsOpen = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--ls-open')
     ) || 0;
     const tx = e.clientX / window.innerWidth;
     const ty = e.clientY / window.innerHeight;
+    // Scale so full expansion is reached before cursor hits the far corner
     const t  = Math.min((tx + ty) / 1.3, 1);
     const tEased = t * t;
     targetLs = lsClose + (lsOpen - lsClose) * tEased;
@@ -47,7 +188,171 @@ function initTitleHover() {
 
 
 // ============================================================
-// CUSTOM CURSOR — crosshair
+// INTRO — reveal image based on which half of page mouse is on
+// ============================================================
+function initIntroSups() {
+  const imgWrap = document.getElementById('intro-img-wrap');
+  if (!imgWrap) return;
+  imgWrap.classList.add('visible');
+}
+
+
+// ============================================================
+// THREE-TRACK SCROLL — lerp driven by window.scrollY
+// ============================================================
+const track1  = document.getElementById('h-track-1');
+const vTrack  = document.getElementById('v-track');
+const track3  = document.getElementById('h-track-3');
+const spacer  = document.getElementById('spacer');
+
+function initSpacer() {
+  // No-op: overflow: hidden + virtual scroll replaces the tall spacer
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function tick() {
+  current = lerp(current, target, 0.12);
+
+  const { P1, P2, P3, maxH1, maxV, maxH3 } = getPhases();
+
+  const x1 = Math.min(Math.max(current, 0), maxH1);
+  const y2 = Math.min(Math.max(current - P1, 0), maxV);
+  const x3 = Math.min(Math.max(current - P1 - P2, 0), maxH3);
+
+  track1.style.transform = `translateX(${-x1}px)`;
+  vTrack.style.transform  = `translateY(${-y2}px)`;
+  track3.style.transform  = `translateX(${-x3}px)`;
+
+  // h-track-1 stays on top; v-track and h-track-3 activate only when populated
+  if (P2 > 0 || maxH3 > 0) {
+    if (current < P1) {
+      track1.style.zIndex = '3';
+      vTrack.style.zIndex  = '2';
+      track3.style.zIndex  = '1';
+    } else if (current < P1 + P2) {
+      track1.style.zIndex = '2';
+      vTrack.style.zIndex  = '3';
+      track3.style.zIndex  = '1';
+    } else {
+      track1.style.zIndex = '2';
+      vTrack.style.zIndex  = '1';
+      track3.style.zIndex  = '3';
+    }
+  }
+
+  updateNav(current);
+  updateCards(current);
+  updateProgress(current);
+  updateVtParallax(current);
+
+  requestAnimationFrame(tick);
+}
+
+function updateVtParallax(scrollPos) {
+  // parallax removed
+}
+
+function initSynopsisSlides() {
+  const slides = document.querySelectorAll('.synopsis-slide');
+  if (!slides.length) return;
+  let current = 0;
+  setInterval(() => {
+    slides[current].classList.remove('is-active');
+    current = (current + 1) % slides.length;
+    slides[current].classList.add('is-active');
+  }, 3000);
+}
+
+function initSynopsisBeats() {
+  const beats = document.querySelectorAll('.synopsis-beat');
+  const img   = document.getElementById('synopsisImg');
+  if (!beats.length || !img) return;
+
+  beats.forEach(beat => {
+    beat.addEventListener('mouseenter', () => {
+      beats.forEach(b => b.classList.remove('is-active'));
+      beat.classList.add('is-active');
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = beat.dataset.img;
+        img.style.opacity = '1';
+      }, 200);
+    });
+  });
+}
+
+function initCharsTitle() {
+  // No animation — static title
+}
+
+function initCharCarousels() {
+  document.querySelectorAll('.char-carousel[data-hover-cycle]').forEach(carousel => {
+    const imgs = carousel.querySelectorAll('.char-carousel-img');
+    if (imgs.length < 2) return;
+    let idx = 0;
+    let timer = null;
+
+    carousel.addEventListener('mouseenter', () => {
+      timer = setInterval(() => {
+        imgs[idx].classList.remove('is-active');
+        idx = (idx + 1) % imgs.length;
+        imgs[idx].classList.add('is-active');
+      }, 1500);
+    });
+
+    carousel.addEventListener('mouseleave', () => {
+      if (timer) { clearInterval(timer); timer = null; }
+    });
+  });
+}
+
+// ============================================================
+// DRAGGABLE — click and move non-full-bleed elements
+// ============================================================
+function makeDraggable(el, centered) {
+  let active = false, ox = 0, oy = 0, dx = 0, dy = 0;
+
+  el.addEventListener('mousedown', e => {
+    active = true;
+    ox = e.clientX - dx;
+    oy = e.clientY - dy;
+    el.style.transition = 'none';
+    el.style.zIndex = '50';
+    el.style.opacity = '0.85';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!active) return;
+    dx = e.clientX - ox;
+    dy = e.clientY - oy;
+    const base = centered ? 'translate(-50%, -50%)' : '';
+    el.style.transform = `${base} translate(${dx}px, ${dy}px)`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!active) return;
+    active = false;
+    el.style.transition = '';
+    el.style.zIndex = '';
+    el.style.opacity = '';
+  });
+}
+
+function initDraggables() {
+  const introImg = document.getElementById('intro-img-wrap');
+  if (introImg) makeDraggable(introImg, true);
+
+  document.querySelectorAll('.dir-vid').forEach(el => makeDraggable(el, false));
+  document.querySelectorAll('.char-panel-img').forEach(el => {
+    makeDraggable(el, el.classList.contains('char-panel-img--centered'));
+  });
+}
+
+
+// ============================================================
+// CUSTOM CURSOR — inverted circle with lerp lag
 // ============================================================
 function initCursor() {
   const cursor = document.createElement('div');
@@ -58,12 +363,15 @@ function initCursor() {
   let cx = mx, cy = my;
 
   document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
+    mx = e.clientX;
+    my = e.clientY;
     cursor.classList.add('visible');
   });
+
   document.addEventListener('mouseleave', () => cursor.classList.remove('visible'));
 
-  const hoverTargets = 'a, button, .hero-title, .cat-card, .cat-thumb, .cat-entry, .vt-block, .press-row';
+  // Expand on interactive elements
+  const hoverTargets = 'a, button, [onclick], .dir-vid, .intro-img-wrap, .hero-title, .tnav-btn, .topnav-title, .vt-thumb';
   document.addEventListener('mouseover', e => {
     if (e.target.closest(hoverTargets)) cursor.classList.add('hover');
   });
@@ -81,363 +389,202 @@ function initCursor() {
 
 
 // ============================================================
-// DETAIL OVERLAY — fullscreen viewer for clicked items
-// ============================================================
-const detailData = {
-  'logline': {
-    title: '(001) Logline',
-    heading: 'A man inherits his estranged father\'s mansion — and the maze he built just for him.',
-    body: '<p>Title: Expansion<br>Written & Directed: Fisherman & Trout<br>Genre: Psychological Horror</p>'
-  },
-  'synopsis': {
-    title: '(002) Synopsis',
-    heading: 'Synopsis',
-    body: '<p>After his estranged father\'s suicide, Jonathan Cameron inherits a destroyed rural mansion. Jon and his wife Esme move in to restore and sell it. But their plan slowly unravels when Jon discovers a hidden hallway that shouldn\'t exist. As Jon delves deeper into the maze, he is attacked by masked intruders, haunted by visions of his past, and slowly alienated from everyone he trusts. In the film\'s climax, Jon is forced to navigate the heart of the labyrinth, where he must finally confront the pain he has spent his entire life avoiding.</p>',
-    media: '<video muted loop autoplay playsinline><source src="../assets/video/compressed/westworld.mp4" type="video/mp4"></video>'
-  },
-  'directors-statement': {
-    title: '(003) Directors Statement',
-    heading: 'There are things inside us we\'d rather bury than face.',
-    body: '<p>Things we hide from ourselves, from our families, from the world. Those things don\'t disappear. They rot.</p><p>We want to make a movie about living inside a person who is consuming themselves because they\'re too afraid to look at what\'s hiding within them. We want it to feel like a nightmare, one constructed the way an architect might design a torture chamber. Claustrophobic, entrapping, filled with danger hiding behind the walls. We should feel almost like Jon\'s being surveilled. As if somehow, Richard is still watching over him, still pulling the strings.</p>',
-    media: '<img src="../assets/Visual Treatment/Directors Statement.png" alt="Directors Statement">'
-  },
-  'jonathan': {
-    title: '(004) Jonathan',
-    heading: 'Jonathan',
-    body: '<p>Jon has spent his entire life running from his past. He\'s smart, loyal and secretly insecure. Jon deals with everything alone, inside his own head. But, when he inherits his father\'s house, Jon finds there\'s nowhere left to run.</p><p>Our ideal actor is deeply charismatic, with a lot of anger underneath. Someone who projects intelligence and restraint while letting resentment leak through in small, dangerous ways. A performance that feels contained, until it isn\'t.</p>',
-    media: '<img src="../assets/images/JON 1.png" alt="Jonathan">'
-  },
-  'esme': {
-    title: '(005) Esme',
-    heading: 'Esme',
-    body: '<p>Esme has accepted what her life is going to look like. She will keep renting, she won\'t have the cash to start a family, she\'s going to spend the rest of her life with Jon. Esme is connected to her emotions, grounded while Jon goes flying into his mind. She believes everything can be fixed. But as she watches Jon deteriorate, her ability to withstand runs out.</p><p>Our ideal actress is someone who can portray warmth and maternal care, but also feels like she\'s carrying a secret. Is that care genuine, or just a ploy to ruin Jon?</p>',
-    media: '<img src="../assets/images/Esme.png" alt="Esme">'
-  },
-  'parker': {
-    title: '(006) Parker',
-    heading: 'Parker',
-    body: '<p>Parker is everything Jon wishes he could be. He fills a room effortlessly. He\'s charismatic, confident and physically imposing. He has a golden retriever energy that appears simply friendly, but underneath the facade, that energy might be something more calculated.</p><p>Our ideal actor for Parker should be an endearing jock who toes the line between charming and threatening. As an audience, we should always be questioning his motive.</p>',
-    media: '<img src="../assets/images/New Parker.png" alt="Parker">'
-  },
-  'richard': {
-    title: '(007) Richard',
-    heading: 'Richard',
-    body: '<p>Richard Cameron hangs himself in the first scene of the movie, but his presence lingers long after. Throughout the film we see him in glimpses. He\'s brilliant, cruel, and the scariest thing in the world to Jon. To everyone else, he was a genius. To Jon, he was a monster.</p><p>Our ideal actor is someone who can portray a larger than life figure, one filled with evil, magnetism and strength. Someone whose presence seeps into every frame, even when he\'s not in it.</p>',
-    media: '<img src="../assets/images/Brian-Cox.webp" alt="Richard">'
-  },
-  'the-house': {
-    title: '(008) The House',
-    heading: 'The House',
-    body: '<p>The house is an extension of Richard\'s mind. Monumental, isolated, fully wrecked. We\'re drawn to constructivism and parasitic architecture. Something that feels epic but also deeply wrong. Throughout the seasons, the house will change. From destroyed, to in repair, to almost ready, and back to destroyed. The house is expressive of Jon\'s mental state.</p>',
-    media: '<img src="../assets/images/House.png" alt="The House">'
-  },
-  'the-maze': {
-    title: '(009) The Maze',
-    heading: 'The Maze',
-    body: '<p>Unlike the house, the maze is always in pristine condition. Its walls are plaster white, incredibly tall, endlessly long. The lighting is dim, showing just enough to make us feel there\'s something hiding. The hallways vary in size, narrowing and widening without logic. What\'s scariest is that we never know what\'s waiting behind a turn.</p>',
-    media: '<img src="../assets/images/Maze.png" alt="The Maze">'
-  }
-};
-
-const detailKeys = Object.keys(detailData);
-let currentDetail = 0;
-
-function initDetail() {
-  const overlay = document.getElementById('detail-overlay');
-  const content = document.getElementById('detail-content');
-  const counter = document.getElementById('detail-counter');
-  const closeBtn = document.getElementById('detail-close');
-  const prevBtn = document.getElementById('detail-prev');
-  const nextBtn = document.getElementById('detail-next');
-
-  function show(key) {
-    const data = detailData[key];
-    if (!data) return;
-    currentDetail = detailKeys.indexOf(key);
-    counter.textContent = String(currentDetail + 1).padStart(2, '0') + ' / ' + String(detailKeys.length).padStart(2, '0');
-
-    let html = `<div class="detail-title">${data.title}</div>`;
-    html += `<div class="detail-heading">${data.heading}</div>`;
-    html += `<div class="detail-body">${data.body}</div>`;
-    if (data.media) html += `<div class="detail-media">${data.media}</div>`;
-
-    content.innerHTML = html;
-    overlay.classList.add('is-open');
-  }
-
-  function close() {
-    overlay.classList.remove('is-open');
-    content.innerHTML = '';
-  }
-
-  // Click handlers on catalog items
-  document.querySelectorAll('[data-detail]').forEach(el => {
-    el.addEventListener('click', () => {
-      show(el.dataset.detail);
-    });
-  });
-
-  closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-
-  prevBtn.addEventListener('click', () => {
-    currentDetail = (currentDetail - 1 + detailKeys.length) % detailKeys.length;
-    show(detailKeys[currentDetail]);
-  });
-  nextBtn.addEventListener('click', () => {
-    currentDetail = (currentDetail + 1) % detailKeys.length;
-    show(detailKeys[currentDetail]);
-  });
-
-  document.addEventListener('keydown', e => {
-    if (!overlay.classList.contains('is-open')) return;
-    if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight') { currentDetail = (currentDetail + 1) % detailKeys.length; show(detailKeys[currentDetail]); }
-    if (e.key === 'ArrowLeft') { currentDetail = (currentDetail - 1 + detailKeys.length) % detailKeys.length; show(detailKeys[currentDetail]); }
-  });
-}
-
-
-// ============================================================
-// LIGHTBOX — videos play with audio, images get prev/next,
-//            Vimeo embeds for work samples
+// LIGHTBOX — for VT archive images/videos
 // ============================================================
 function initLightbox() {
   const lightbox = document.getElementById('lightbox');
-  const content  = document.getElementById('lightbox-content');
+  const content = document.getElementById('lightbox-content');
+  const caption = document.getElementById('lightbox-caption');
   const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
 
-  let mediaItems = [];
-  let mediaIndex = 0;
+  // Collect all VT thumbs
+  const thumbs = Array.from(document.querySelectorAll('.vt-thumb'));
+  let currentIndex = 0;
+
+  // Mark video thumbs
+  thumbs.forEach(thumb => {
+    if (thumb.querySelector('video')) thumb.classList.add('vt-thumb--has-video');
+  });
+
+  function getMediaSrc(thumb) {
+    const yt = thumb.dataset.youtube;
+    if (yt) {
+      const id = yt.match(/[?&]v=([^&]+)/);
+      if (id) return { type: 'youtube', src: id[1] };
+    }
+    const video = thumb.querySelector('video source');
+    if (video) return { type: 'video', src: video.getAttribute('src') };
+    const img = thumb.querySelector('img');
+    if (img) return { type: 'image', src: img.getAttribute('src') };
+    return null;
+  }
+
+  function getCaption(thumb) {
+    const cap = thumb.querySelector('.vt-caption');
+    return cap ? cap.textContent : '';
+  }
+
+  function show(index) {
+    currentIndex = index;
+    const thumb = thumbs[index];
+    const media = getMediaSrc(thumb);
+    if (!media) return;
+
+    content.innerHTML = '';
+    if (media.type === 'youtube') {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${media.src}?autoplay=1&rel=0`;
+      iframe.width = '1280';
+      iframe.height = '720';
+      iframe.style.maxWidth = '85vw';
+      iframe.style.maxHeight = '80vh';
+      iframe.style.border = 'none';
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.allowFullscreen = true;
+      content.appendChild(iframe);
+    } else if (media.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = media.src;
+      vid.controls = true;
+      vid.autoplay = true;
+      vid.playsInline = true;
+      content.appendChild(vid);
+    } else {
+      const img = document.createElement('img');
+      img.src = media.src;
+      content.appendChild(img);
+    }
+    caption.textContent = getCaption(thumb);
+  }
+
+  function open(index) {
+    show(index);
+    lightbox.classList.add('is-open');
+    // Pause horizontal scroll
+    document.body.dataset.lightboxOpen = 'true';
+  }
 
   function close() {
     lightbox.classList.remove('is-open');
+    delete document.body.dataset.lightboxOpen;
+    // Stop any playing video
+    const vid = content.querySelector('video');
+    if (vid) { vid.pause(); vid.src = ''; }
     content.innerHTML = '';
-    mediaItems = [];
+    prevBtn.style.display = '';
+    nextBtn.style.display = '';
   }
 
-  function showMedia(idx) {
-    mediaIndex = idx;
-    content.innerHTML = '';
-
-    const item = mediaItems[mediaIndex];
-    if (!item) return;
-
-    // Nav arrows if multiple items
-    if (mediaItems.length > 1) {
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'lb-arrow lb-arrow--prev';
-      prevBtn.innerHTML = '&larr;';
-      prevBtn.addEventListener('click', e => { e.stopPropagation(); showMedia((mediaIndex - 1 + mediaItems.length) % mediaItems.length); });
-      content.appendChild(prevBtn);
-
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'lb-arrow lb-arrow--next';
-      nextBtn.innerHTML = '&rarr;';
-      nextBtn.addEventListener('click', e => { e.stopPropagation(); showMedia((mediaIndex + 1) % mediaItems.length); });
-      content.appendChild(nextBtn);
-    }
-
-    if (item.type === 'video') {
-      const v = document.createElement('video');
-      v.src = item.src;
-      v.controls = true;
-      v.autoplay = true;
-      v.playsInline = true;
-      v.className = 'lb-video';
-      content.appendChild(v);
-    } else if (item.type === 'img') {
-      const img = document.createElement('img');
-      img.src = item.src;
-      img.className = 'lb-img';
-      content.appendChild(img);
-    } else if (item.type === 'iframe') {
-      const iframe = document.createElement('iframe');
-      iframe.src = item.src;
-      iframe.width = '1280'; iframe.height = '720';
-      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
-      iframe.allowFullscreen = true;
-      iframe.className = 'lb-iframe';
-      content.appendChild(iframe);
-    }
+  function prev() {
+    const idx = (currentIndex - 1 + thumbs.length) % thumbs.length;
+    show(idx);
   }
+
+  function next() {
+    const idx = (currentIndex + 1) % thumbs.length;
+    show(idx);
+  }
+
+  // Click handlers
+  thumbs.forEach((thumb, i) => {
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      open(i);
+    });
+  });
 
   closeBtn.addEventListener('click', close);
-  lightbox.addEventListener('click', e => { if (e.target === lightbox) close(); });
-  document.addEventListener('keydown', e => {
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) close();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
     if (!lightbox.classList.contains('is-open')) return;
     if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight' && mediaItems.length > 1) showMedia((mediaIndex + 1) % mediaItems.length);
-    if (e.key === 'ArrowLeft' && mediaItems.length > 1) showMedia((mediaIndex - 1 + mediaItems.length) % mediaItems.length);
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'ArrowRight') next();
   });
 
-  // Vimeo work samples
-  document.querySelectorAll('[data-vimeo]').forEach(card => {
+  // Work sample cards — click to open Vimeo in lightbox
+  document.querySelectorAll('.profile-card[data-vimeo]').forEach(card => {
+    card.style.cursor = 'pointer';
     card.addEventListener('click', () => {
-      mediaItems = [{ type: 'iframe', src: card.dataset.vimeo }];
-      showMedia(0);
+      content.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = card.dataset.vimeo;
+      iframe.width = '1280';
+      iframe.height = '720';
+      iframe.style.maxWidth = '85vw';
+      iframe.style.maxHeight = '80vh';
+      iframe.style.border = 'none';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      content.appendChild(iframe);
+      const title = card.querySelector('.profile-card-title');
+      caption.textContent = title ? title.textContent : '';
       lightbox.classList.add('is-open');
+      document.body.dataset.lightboxOpen = 'true';
+      // Hide arrows for work sample lightbox
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
     });
   });
 
-  // Clicking videos in thumbs — open with audio controls
-  document.querySelectorAll('.cat-thumb video, .synopsis-media video').forEach(vid => {
-    vid.addEventListener('click', () => {
-      const src = vid.querySelector('source');
-      const videoSrc = src ? (src.src || src.dataset.src) : vid.src;
-      if (!videoSrc) return;
-
-      // Gather sibling media in same parent group
-      const parent = vid.closest('.vt-thumbs, .vt-block, .synopsis-media');
-      if (parent) {
-        mediaItems = [];
-        parent.querySelectorAll('.cat-thumb img, .cat-thumb video, .synopsis-media video').forEach(el => {
-          if (el.tagName === 'VIDEO') {
-            const s = el.querySelector('source');
-            const url = s ? (s.src || s.dataset.src) : el.src;
-            if (url) mediaItems.push({ type: 'video', src: url });
-          } else if (el.tagName === 'IMG') {
-            mediaItems.push({ type: 'img', src: el.src });
-          }
-        });
-        const clickedSrc = videoSrc;
-        const idx = mediaItems.findIndex(m => m.src === clickedSrc);
-        showMedia(idx >= 0 ? idx : 0);
-      } else {
-        mediaItems = [{ type: 'video', src: videoSrc }];
-        showMedia(0);
-      }
-      lightbox.classList.add('is-open');
-    });
-  });
-
-  // Clicking images in thumbs — open with prev/next
-  document.querySelectorAll('.cat-thumb img').forEach(img => {
-    img.addEventListener('click', () => {
-      const parent = img.closest('.vt-thumbs, .vt-block');
-      if (parent) {
-        mediaItems = [];
-        parent.querySelectorAll('.cat-thumb img, .cat-thumb video').forEach(el => {
-          if (el.tagName === 'VIDEO') {
-            const s = el.querySelector('source');
-            const url = s ? (s.src || s.dataset.src) : el.src;
-            if (url) mediaItems.push({ type: 'video', src: url });
-          } else if (el.tagName === 'IMG') {
-            mediaItems.push({ type: 'img', src: el.src });
-          }
-        });
-        const idx = mediaItems.findIndex(m => m.src === img.src);
-        showMedia(idx >= 0 ? idx : 0);
-      } else {
-        mediaItems = [{ type: 'img', src: img.src }];
-        showMedia(0);
-      }
-      lightbox.classList.add('is-open');
-    });
-  });
 }
 
 
 // ============================================================
-// LAZY VIDEO
+// LAZY VIDEO — load & play only when panel is near viewport
 // ============================================================
 function initLazyVideos() {
-  const videos = document.querySelectorAll('video[data-lazy]');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target;
-      if (entry.isIntersecting) {
+  const videos = document.querySelectorAll('video[preload="none"]');
+  const loaded = new Set();
+  const vw = window.innerWidth;
+
+  // Pre-calculate each video's absolute position in the scroll timeline
+  const videoPositions = [];
+  videos.forEach(video => {
+    const panel = video.closest('.panel');
+    if (!panel) return;
+    // offsetLeft gives position within the h-track
+    const pos = panel.offsetLeft;
+    videoPositions.push({ video, pos });
+  });
+
+  function checkVideos() {
+    const scrollPos = current; // use the lerped scroll value from the main loop
+    const margin = vw * 1.5;
+
+    videoPositions.forEach(({ video, pos }) => {
+      const inRange = pos < scrollPos + vw + margin && pos + vw > scrollPos - margin;
+
+      if (inRange && !loaded.has(video)) {
         const source = video.querySelector('source[data-src]');
         if (source) {
           source.src = source.dataset.src;
           source.removeAttribute('data-src');
           video.load();
-        }
-        if (!video.hasAttribute('controls')) {
           video.play().catch(() => {});
+          loaded.add(video);
         }
-      } else {
-        if (!video.hasAttribute('controls') && !video.paused) {
-          video.pause();
-        }
+      } else if (!inRange && loaded.has(video)) {
+        video.pause();
+      } else if (inRange && loaded.has(video)) {
+        if (video.paused && !document.body.dataset.lightboxOpen) video.play().catch(() => {});
       }
     });
-  }, { rootMargin: '200px' });
-  videos.forEach(v => observer.observe(v));
-}
+  }
 
-
-// ============================================================
-// SCROLL REVEAL
-// ============================================================
-function initReveal() {
-  const els = document.querySelectorAll('.cat-section, .cat-header, .cat-entry, .cat-card, .vt-block, .cat-entry--bio');
-  els.forEach(el => el.classList.add('reveal'));
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) entry.target.classList.add('visible');
-    });
-  }, { threshold: 0.05 });
-  els.forEach(el => observer.observe(el));
-}
-
-
-// ============================================================
-// NAV — active link highlight
-// ============================================================
-function initNav() {
-  const links = document.querySelectorAll('.tnav-link');
-  const sections = document.querySelectorAll('.cat-section');
-
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(sec => {
-      if (window.scrollY >= sec.offsetTop - 200) {
-        current = sec.id;
-      }
-    });
-    links.forEach(link => {
-      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
-    });
-  }, { passive: true });
-}
-
-
-// ============================================================
-// CAROUSELS — prev/next on setting images
-// ============================================================
-function initCarousels() {
-  document.querySelectorAll('.carousel').forEach(carousel => {
-    const slides = carousel.querySelectorAll('.carousel-slide');
-    const prevBtn = carousel.querySelector('.carousel-btn--prev');
-    const nextBtn = carousel.querySelector('.carousel-btn--next');
-    let current = 0;
-
-    function show(idx) {
-      slides[current].classList.remove('is-active');
-      // pause video in old slide
-      const oldVid = slides[current].querySelector('video');
-      if (oldVid && !oldVid.paused) oldVid.pause();
-
-      current = (idx + slides.length) % slides.length;
-      slides[current].classList.add('is-active');
-
-      // play video in new slide
-      const newVid = slides[current].querySelector('video');
-      if (newVid) {
-        const src = newVid.querySelector('source[data-src]');
-        if (src) {
-          src.src = src.dataset.src;
-          src.removeAttribute('data-src');
-          newVid.load();
-        }
-        newVid.play().catch(() => {});
-      }
-    }
-
-    prevBtn.addEventListener('click', e => { e.stopPropagation(); show(current - 1); });
-    nextBtn.addEventListener('click', e => { e.stopPropagation(); show(current + 1); });
-  });
+  function lazyTick() {
+    checkVideos();
+    requestAnimationFrame(lazyTick);
+  }
+  requestAnimationFrame(lazyTick);
 }
 
 
@@ -492,7 +639,6 @@ function initAudioPlayers() {
       waveformDrawn = true;
     }
 
-    // Decode audio for waveform on first interaction or load
     function loadAndDraw() {
       if (waveformDrawn) return;
       fetch(src)
@@ -505,7 +651,6 @@ function initAudioPlayers() {
         .catch(() => {});
     }
 
-    // Draw placeholder bars
     function drawPlaceholder() {
       const ctx = canvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
@@ -525,7 +670,6 @@ function initAudioPlayers() {
 
     drawPlaceholder();
 
-    // Load waveform when visible
     const obs = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         loadAndDraw();
@@ -582,19 +726,24 @@ function initAudioPlayers() {
 }
 
 
-// ============================================================
-// INIT
-// ============================================================
 window.addEventListener('load', () => {
+  initSpacer();
   initCursor();
-  initTitleHover();
-  initDetail();
+  initDraggables();
   initLightbox();
   initLazyVideos();
-  initCarousels();
+  // 'load' fires after all resources including fonts — safe to measure immediately
+  initTitleHover();
+  initIntroSups();
+  initSynopsisBeats();
+  initSynopsisSlides();
+  initCharCarousels();
+  initCharsTitle();
   initAudioPlayers();
-  initReveal();
-  initNav();
+  requestAnimationFrame(tick);
 });
 
-window.addEventListener('resize', calcExpansionLetterSpacing);
+window.addEventListener('resize', () => {
+  initSpacer();
+  calcExpansionLetterSpacing();
+});
