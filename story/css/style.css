@@ -780,7 +780,7 @@ body::before {
 
 .dir-vid--bl {
   top: 54%;
-  left: -15%;
+  left: -20%;
   width: clamp(264px, 33.6vw, 504px);
 }
 
@@ -2305,7 +2305,7 @@ body::before {
   min-width: 100px;
 }
 .aix-press-hl {
-  font-family: var(--serif);
+  font-family: var(--font);
   font-size: 12px;
   color: var(--dim);
 }
