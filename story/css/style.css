@@ -571,16 +571,34 @@ em { font-style: italic; }
 .vt-thumbs--2 { grid-template-columns: repeat(2, 1fr); }
 .vt-thumbs--1 { grid-template-columns: 1fr; max-width: 500px; }
 
-.cat-thumb--yt {
-  position: relative;
-  padding-bottom: 62.5%; /* 16:10 */
-  height: 0;
+/* ── Audio players ── */
+.audio-players {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
 }
-.cat-thumb--yt iframe {
-  position: absolute;
-  top: 0; left: 0;
+.audio-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.audio-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.audio-item audio {
   width: 100%;
-  height: 100%;
+  max-width: 400px;
+  height: 36px;
+}
+.yt-audio {
+  width: 100%;
+  max-width: 400px;
+  height: 80px;
+  border: 1px solid var(--rule);
 }
 
 
