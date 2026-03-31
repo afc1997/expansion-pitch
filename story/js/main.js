@@ -35,6 +35,7 @@ function getMaxScroll() {
 }
 
 window.addEventListener('wheel', e => {
+  if (document.body.dataset.lightboxOpen) return;
   e.preventDefault();
   // Prefer horizontal delta; fall back to vertical (standard mouse wheel)
   const delta = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -53,11 +54,11 @@ function scrollToSection(sectionId) {
   const { P1, P2 } = getPhases();
   const vw = window.innerWidth;
   const targets = {
-    project:            vw,          // Intro panel
-    characters:         vw * 5,     // Jonathan panel
-    setting:            vw * 6.96,  // House panel
-    'visual-treatment': P1,          // Visual Treatment title card
-    visual:             P1,
+    project:            vw * 2,      // Synopsis panel
+    characters:         vw * 4,      // Characters title card
+    setting:            vw * 9,      // House panel
+    'visual-treatment': vw * 12,     // Visual Treatment title card
+    visual:             vw * 12,
     directors:          P1 + P2
   };
   if (targets[sectionId] !== undefined) target = targets[sectionId];
@@ -376,7 +377,7 @@ function initCursor() {
   document.addEventListener('mouseleave', () => cursor.classList.remove('visible'));
 
   // Expand on interactive elements
-  const hoverTargets = 'a, button, [onclick], .dir-vid, .intro-img-wrap, .hero-title, .tnav-btn, .topnav-title';
+  const hoverTargets = 'a, button, [onclick], .dir-vid, .intro-img-wrap, .hero-title, .tnav-btn, .topnav-title, .vt-thumb';
   document.addEventListener('mouseover', e => {
     if (e.target.closest(hoverTargets)) cursor.classList.add('hover');
   });
@@ -393,10 +394,161 @@ function initCursor() {
 }
 
 
+// ============================================================
+// LIGHTBOX — for VT archive images/videos
+// ============================================================
+function initLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  const content = document.getElementById('lightbox-content');
+  const caption = document.getElementById('lightbox-caption');
+  const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
+
+  // Collect all VT thumbs
+  const thumbs = Array.from(document.querySelectorAll('.vt-thumb'));
+  let currentIndex = 0;
+
+  // Mark video thumbs
+  thumbs.forEach(thumb => {
+    if (thumb.querySelector('video')) thumb.classList.add('vt-thumb--has-video');
+  });
+
+  function getMediaSrc(thumb) {
+    const yt = thumb.dataset.youtube;
+    if (yt) {
+      const id = yt.match(/[?&]v=([^&]+)/);
+      if (id) return { type: 'youtube', src: id[1] };
+    }
+    const video = thumb.querySelector('video source');
+    if (video) return { type: 'video', src: video.getAttribute('src') };
+    const img = thumb.querySelector('img');
+    if (img) return { type: 'image', src: img.getAttribute('src') };
+    return null;
+  }
+
+  function getCaption(thumb) {
+    const cap = thumb.querySelector('.vt-caption');
+    return cap ? cap.textContent : '';
+  }
+
+  function show(index) {
+    currentIndex = index;
+    const thumb = thumbs[index];
+    const media = getMediaSrc(thumb);
+    if (!media) return;
+
+    content.innerHTML = '';
+    if (media.type === 'youtube') {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${media.src}?autoplay=1&rel=0`;
+      iframe.width = '1280';
+      iframe.height = '720';
+      iframe.style.maxWidth = '85vw';
+      iframe.style.maxHeight = '80vh';
+      iframe.style.border = 'none';
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.allowFullscreen = true;
+      content.appendChild(iframe);
+    } else if (media.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = media.src;
+      vid.controls = true;
+      vid.autoplay = true;
+      vid.playsInline = true;
+      content.appendChild(vid);
+    } else {
+      const img = document.createElement('img');
+      img.src = media.src;
+      content.appendChild(img);
+    }
+    caption.textContent = getCaption(thumb);
+  }
+
+  function open(index) {
+    show(index);
+    lightbox.classList.add('is-open');
+    // Pause horizontal scroll
+    document.body.dataset.lightboxOpen = 'true';
+  }
+
+  function close() {
+    lightbox.classList.remove('is-open');
+    delete document.body.dataset.lightboxOpen;
+    // Stop any playing video
+    const vid = content.querySelector('video');
+    if (vid) { vid.pause(); vid.src = ''; }
+    content.innerHTML = '';
+    prevBtn.style.display = '';
+    nextBtn.style.display = '';
+  }
+
+  function prev() {
+    const idx = (currentIndex - 1 + thumbs.length) % thumbs.length;
+    show(idx);
+  }
+
+  function next() {
+    const idx = (currentIndex + 1) % thumbs.length;
+    show(idx);
+  }
+
+  // Click handlers
+  thumbs.forEach((thumb, i) => {
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      open(i);
+    });
+  });
+
+  closeBtn.addEventListener('click', close);
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) close();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('is-open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'ArrowRight') next();
+  });
+
+  // Work sample cards — click to open Vimeo in lightbox
+  document.querySelectorAll('.profile-card[data-vimeo]').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      content.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = card.dataset.vimeo;
+      iframe.width = '1280';
+      iframe.height = '720';
+      iframe.style.maxWidth = '85vw';
+      iframe.style.maxHeight = '80vh';
+      iframe.style.border = 'none';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      content.appendChild(iframe);
+      const title = card.querySelector('.profile-card-title');
+      caption.textContent = title ? title.textContent : '';
+      lightbox.classList.add('is-open');
+      document.body.dataset.lightboxOpen = 'true';
+      // Hide arrows for work sample lightbox
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+    });
+  });
+
+}
+
+
 window.addEventListener('load', () => {
   initSpacer();
   initCursor();
   initDraggables();
+  initLightbox();
   // 'load' fires after all resources including fonts — safe to measure immediately
   initTitleHover();
   initIntroSups();

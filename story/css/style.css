@@ -738,7 +738,8 @@ a { color: inherit; text-decoration: none; }
   transform: scale(1.25);
 }
 
-.dir-vid video {
+.dir-vid video,
+.dir-vid img {
   width: 100%;
   display: block;
   filter: brightness(0.82);
@@ -1578,7 +1579,7 @@ a { color: inherit; text-decoration: none; }
    ============================================================ */
 .panel-vt-archive {
   background: #000;
-  width: 85vw;
+  width: 100vw;
   display: flex;
   align-items: flex-start;
   padding: var(--pad);
@@ -1586,7 +1587,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .vt-archive-text {
-  flex: 0 0 28%;
+  flex: 0 0 22%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1598,18 +1599,20 @@ a { color: inherit; text-decoration: none; }
 }
 
 .vt-archive-grid {
+  flex: 1;
   display: flex;
   gap: 12px;
   height: calc(100% - 120px);
   align-self: center;
+  min-width: 0;
 }
 
 .vt-thumb {
   position: relative;
   overflow: hidden;
   height: 100%;
-  width: calc((100vh - 120px) * 2 / 3);
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .vt-placeholder {
@@ -1628,6 +1631,9 @@ a { color: inherit; text-decoration: none; }
   display: block;
   filter: brightness(0.8);
   will-change: transform;
+  position: absolute;
+  top: 0;
+  left: -15%;
 }
 
 .vt-caption {
@@ -1737,7 +1743,7 @@ a { color: inherit; text-decoration: none; }
 /* About */
 .panel-profile-about {
   background: #000;
-  width: 70vw;
+  width: 45vw;
   display: flex;
   align-items: center;
   padding: var(--pad);
@@ -1745,23 +1751,10 @@ a { color: inherit; text-decoration: none; }
 }
 
 .profile-about-text {
-  flex: 0 0 40%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.profile-about-img {
-  flex: 1;
-  height: 70%;
-  overflow: hidden;
-}
-
-.profile-about-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.85);
 }
 
 /* Work Samples */
@@ -1787,16 +1780,11 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
   text-decoration: none;
   color: var(--text);
-  transition: opacity 0.3s ease;
-}
-
-.profile-card:hover {
-  opacity: 0.8;
 }
 
 .profile-card-img {
-  flex: 1;
   overflow: hidden;
+  height: 28vh;
 }
 
 .profile-card-img img {
@@ -1805,6 +1793,10 @@ a { color: inherit; text-decoration: none; }
   object-fit: cover;
   display: block;
   filter: brightness(0.8);
+}
+
+.profile-card:hover {
+  opacity: 0.8;
 }
 
 .profile-card-info {
@@ -1872,7 +1864,7 @@ a { color: inherit; text-decoration: none; }
 /* Press */
 .panel-profile-press {
   background: #000;
-  width: 50vw;
+  width: 35vw;
   display: flex;
   align-items: flex-start;
   padding: var(--pad);
@@ -1931,7 +1923,7 @@ a { color: inherit; text-decoration: none; }
 /* Recognition */
 .panel-profile-recognition {
   background: #000;
-  width: 50vw;
+  width: 35vw;
   display: flex;
   align-items: flex-start;
   padding: var(--pad);
@@ -2034,6 +2026,130 @@ a { color: inherit; text-decoration: none; }
 .profile-link--site {
   font-size: 13px;
   letter-spacing: 0.08em;
+}
+
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lightbox-content {
+  max-width: 85vw;
+  max-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-content img,
+.lightbox-content video {
+  max-width: 85vw;
+  max-height: 80vh;
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 32px;
+  font-weight: 200;
+  font-family: var(--font);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  cursor: pointer !important;
+}
+
+.lightbox-close:hover {
+  opacity: 1;
+}
+
+.lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 200;
+  font-family: var(--font);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  padding: 20px;
+  cursor: pointer !important;
+}
+
+.lightbox-arrow:hover {
+  opacity: 1;
+}
+
+.lightbox-arrow--left {
+  left: 24px;
+}
+
+.lightbox-arrow--right {
+  right: 24px;
+}
+
+.lightbox-caption {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* Make VT thumbs clickable */
+.vt-thumb {
+  cursor: pointer !important;
+}
+
+/* Play icon overlay on video thumbs */
+.vt-thumb--youtube::after,
+.vt-thumb--has-video::after {
+  content: '▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: rgba(255,255,255,0.7);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.vt-thumb--youtube:hover::after,
+.vt-thumb--has-video:hover::after {
+  opacity: 0.4;
 }
 
 
