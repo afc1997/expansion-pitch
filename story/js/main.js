@@ -51,15 +51,17 @@ function scrollToPanel(index) {
 }
 
 function scrollToSection(sectionId) {
+  const el = document.getElementById(sectionId);
+  if (el) {
+    target = Math.max(0, Math.min(el.offsetLeft, getMaxScroll()));
+    return;
+  }
+  // Fallback for sections without IDs
   const { P1, P2 } = getPhases();
   const vw = window.innerWidth;
   const targets = {
-    project:            vw * 2,      // Synopsis panel
-    characters:         vw * 4,      // Characters title card
-    setting:            vw * 9,      // House panel
-    'visual-treatment': vw * 12,     // Visual Treatment title card
-    visual:             vw * 12,
-    about:              vw * 19,     // About title card
+    project:            vw * 2,
+    characters:         vw * 4,
     directors:          P1 + P2
   };
   if (targets[sectionId] !== undefined) target = targets[sectionId];
@@ -82,14 +84,16 @@ function updateProgress(scrollY) {
 }
 
 function updateNav(scrollY) {
-  const { P1, P2 } = getPhases();
   const vw = window.innerWidth;
+  const aboutEl = document.getElementById('about');
+  const vtEl = document.getElementById('visual-treatment');
+  const aboutPos = aboutEl ? aboutEl.offsetLeft - vw * 0.5 : Infinity;
+  const vtPos = vtEl ? vtEl.offsetLeft - vw * 0.5 : Infinity;
   let active = '';
-  if (scrollY >= vw * 18.5)      active = 'about';
-  else if (scrollY >= vw * 9.31) active = 'visual-treatment';
-  else if (scrollY >= vw * 6.96) active = 'setting';
-  else if (scrollY >= vw * 5)    active = 'characters';
-  else if (scrollY >= vw)        active = 'project';
+  if (scrollY >= aboutPos)        active = 'about';
+  else if (scrollY >= vtPos)      active = 'visual-treatment';
+  else if (scrollY >= vw * 5)     active = 'characters';
+  else if (scrollY >= vw)         active = 'project';
 
   tnavBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.section === active);
@@ -558,7 +562,7 @@ function initLazyVideos() {
 
   function checkVideos() {
     const scrollPos = current; // use the lerped scroll value from the main loop
-    const margin = vw * 1.5;
+    const margin = vw * 2.5;
 
     videoPositions.forEach(({ video, pos }) => {
       const inRange = pos < scrollPos + vw + margin && pos + vw > scrollPos - margin;
