@@ -442,20 +442,22 @@ function initCarousels() {
 
 
 // ============================================================
-// CUSTOM AUDIO PLAYERS
+// CUSTOM AUDIO PLAYERS WITH WAVEFORM
 // ============================================================
 function initAudioPlayers() {
   document.querySelectorAll('.audio-player').forEach(player => {
     const src = player.dataset.src;
     const playBtn = player.querySelector('.ap-play');
-    const track = player.querySelector('.ap-track');
-    const progress = player.querySelector('.ap-progress');
+    const waveformEl = player.querySelector('.ap-waveform');
+    const canvas = waveformEl.querySelector('canvas');
+    const progressEl = waveformEl.querySelector('.ap-waveform-progress');
     const timeEl = player.querySelector('.ap-time');
     const audio = new Audio();
     audio.preload = 'none';
     audio.src = src;
 
     let loaded = false;
+    let waveformDrawn = false;
 
     function fmt(s) {
       const m = Math.floor(s / 60);
@@ -463,10 +465,78 @@ function initAudioPlayers() {
       return m + ':' + String(sec).padStart(2, '0');
     }
 
+    function drawWaveform(buffer) {
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+
+      const data = buffer.getChannelData(0);
+      const bars = Math.floor(w / 3);
+      const step = Math.floor(data.length / bars);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      for (let i = 0; i < bars; i++) {
+        let sum = 0;
+        for (let j = 0; j < step; j++) {
+          sum += Math.abs(data[i * step + j]);
+        }
+        const avg = sum / step;
+        const barH = Math.max(1, avg * h * 2.5);
+        const x = i * 3;
+        ctx.fillRect(x, (h - barH) / 2, 1.5, barH);
+      }
+      waveformDrawn = true;
+    }
+
+    // Decode audio for waveform on first interaction or load
+    function loadAndDraw() {
+      if (waveformDrawn) return;
+      fetch(src)
+        .then(r => r.arrayBuffer())
+        .then(buf => {
+          const actx = new (window.AudioContext || window.webkitAudioContext)();
+          return actx.decodeAudioData(buf);
+        })
+        .then(drawWaveform)
+        .catch(() => {});
+    }
+
+    // Draw placeholder bars
+    function drawPlaceholder() {
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.10)';
+      const bars = Math.floor(w / 3);
+      for (let i = 0; i < bars; i++) {
+        const barH = Math.random() * h * 0.6 + 2;
+        ctx.fillRect(i * 3, (h - barH) / 2, 1.5, barH);
+      }
+    }
+
+    drawPlaceholder();
+
+    // Load waveform when visible
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        loadAndDraw();
+        obs.disconnect();
+      }
+    }, { rootMargin: '200px' });
+    obs.observe(player);
+
     playBtn.addEventListener('click', () => {
       if (!loaded) { audio.load(); loaded = true; }
       if (audio.paused) {
-        // Pause all other players
         document.querySelectorAll('.audio-player').forEach(p => {
           if (p !== player && p._audio && !p._audio.paused) {
             p._audio.pause();
@@ -483,22 +553,28 @@ function initAudioPlayers() {
 
     audio.addEventListener('timeupdate', () => {
       if (audio.duration) {
-        progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        progressEl.style.width = (audio.currentTime / audio.duration * 100) + '%';
         timeEl.textContent = fmt(audio.currentTime);
       }
     });
 
     audio.addEventListener('ended', () => {
       playBtn.innerHTML = '&#9654;';
-      progress.style.width = '0%';
+      progressEl.style.width = '0%';
       timeEl.textContent = '0:00';
     });
 
-    track.addEventListener('click', e => {
+    waveformEl.addEventListener('click', e => {
       if (!loaded) { audio.load(); loaded = true; }
-      const rect = track.getBoundingClientRect();
+      const rect = waveformEl.getBoundingClientRect();
       const pct = (e.clientX - rect.left) / rect.width;
-      if (audio.duration) audio.currentTime = pct * audio.duration;
+      if (audio.duration) {
+        audio.currentTime = pct * audio.duration;
+        if (audio.paused) {
+          audio.play();
+          playBtn.innerHTML = '&#10074;&#10074;';
+        }
+      }
     });
 
     player._audio = audio;

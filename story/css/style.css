@@ -573,30 +573,54 @@ em { font-style: italic; }
 
 /* ── Custom audio players ── */
 .audio-players {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin-top: 20px;
-  max-width: 500px;
 }
 .audio-player {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
   border: 1px solid var(--rule);
   transition: border-color 0.3s;
 }
 .audio-player:hover {
   border-color: var(--muted);
 }
+.ap-waveform {
+  width: 100%;
+  height: 48px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.ap-waveform canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ap-waveform-progress {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0%;
+  height: 100%;
+  background: rgba(255,255,255,0.08);
+  pointer-events: none;
+}
+.ap-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .ap-play {
   background: none;
   border: none;
   color: var(--text);
   font-size: 11px;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -607,25 +631,10 @@ em { font-style: italic; }
 .ap-play:hover {
   color: #fff;
 }
-.ap-track {
-  flex: 1;
-  height: 2px;
-  background: var(--rule);
-  position: relative;
-  cursor: pointer;
-}
-.ap-progress {
-  height: 100%;
-  background: var(--text);
-  width: 0%;
-  transition: width 0.1s linear;
-}
 .ap-time {
   font-family: var(--sans);
   font-size: 10px;
   color: var(--muted);
-  min-width: 32px;
-  text-align: right;
   flex-shrink: 0;
 }
 
