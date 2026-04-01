@@ -63,8 +63,8 @@
 
     .cylinder-item {
       position: absolute;
-      width: 140px;
-      left: -70px; top: -50px;
+      width: 170px;
+      left: -85px; top: -58px;
       backface-visibility: visible;
       cursor: pointer;
       transition: filter 0.3s;
@@ -73,7 +73,7 @@
 
     .cylinder-item-media {
       position: relative;
-      width: 100%; height: 79px;
+      width: 100%; height: 96px;
       overflow: hidden;
     }
     .cylinder-item img, .cylinder-item video {
@@ -131,6 +131,66 @@
     .loader-bar-fill { height: 100%; width: 0%; background: #fff; transition: width 0.2s; }
     .loader-pct { margin-top: 12px; font-size: 11px; letter-spacing: 0.1em; opacity: 0.4; }
 
+    /* Audio player */
+    .archive-player {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 2px;
+    }
+    .ap-play {
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 11px; cursor: pointer; padding: 0; line-height: 1;
+      transition: color 0.2s;
+    }
+    .ap-play:hover { color: #fff; }
+    .ap-waveform {
+      position: relative;
+      width: 180px; height: 24px;
+      cursor: pointer;
+    }
+    .ap-waveform canvas {
+      width: 100%; height: 100%; display: block;
+    }
+    .ap-waveform-progress {
+      position: absolute; top: 0; left: 0;
+      height: 100%; width: 0%;
+      background: rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+    .ap-info {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    .ap-title {
+      font-size: 7px; text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.45);
+      white-space: nowrap;
+    }
+    .ap-time {
+      font-size: 7px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 768px) {
+      body, * { cursor: auto !important; }
+      .cursor { display: none !important; }
+      .archive-nav { padding: 12px 16px; font-size: 10px; }
+      .archive-player { bottom: 12px; padding: 6px 10px; }
+      .ap-waveform { width: 120px; }
+      .cylinder-item { width: 120px; left: -60px; }
+      .cylinder-item-media { height: 68px; }
+    }
+
     .grain {
       position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.03;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -156,6 +216,19 @@
 
   <div class="cylinder-scene" id="scene">
     <div class="cylinder-body" id="cylinder-body"></div>
+  </div>
+
+  <!-- Audio player -->
+  <div class="archive-player" id="archive-player">
+    <button class="ap-play" id="ap-play">&#9654;</button>
+    <div class="ap-waveform" id="ap-waveform">
+      <canvas></canvas>
+      <div class="ap-waveform-progress" id="ap-progress"></div>
+    </div>
+    <div class="ap-info">
+      <span class="ap-title">Mica Levi &amp; Johnnie Burn — The Zone of Interest</span>
+      <span class="ap-time" id="ap-time">0:00</span>
+    </div>
   </div>
 
   <div class="lb" id="lb">
@@ -250,6 +323,8 @@
     { type: 'video', src: '../assets/video/compressed/Tone2.mp4', hq: '../assets/video/hq/Tone2.mp4', name: 'Tone Reference', sub: 'Visual Treatment' },
     { type: 'video', src: '../assets/video/compressed/Tone3.mp4', hq: '../assets/video/hq/Tone3.mp4', name: 'Tone Reference', sub: 'Visual Treatment' },
     { type: 'video', src: '../assets/video/compressed/westworld.mp4', hq: '../assets/video/hq/westworld.mp4', name: 'Westworld', sub: 'Tone Reference' },
+    { type: 'video', src: '../assets/video/compressed/safe-convulsion.mp4', hq: '../assets/video/hq/safe-convulsion.mp4', name: 'Safe', sub: 'Convulsion' },
+    { type: 'video', src: '../assets/video/compressed/nostalghia-sartre70486.mp4', hq: '../assets/video/hq/nostalghia-sartre70486.mp4', name: 'Nostalghia', sub: 'Camera Reference' },
   ];
 
   // ── Loading ──
@@ -295,8 +370,8 @@
   // Small items (150px), tight gaps, large radius = feels like a grid that curves.
   const PER_ROW = 8;
   const ANGLE_STEP = 360 / PER_ROW;   // 40°
-  const RADIUS = 420;
-  const ROW_H = 110;
+  const RADIUS = 410;
+  const ROW_H = 145;
 
   const cylinderBody = document.getElementById('cylinder-body');
   const numRows = Math.ceil(MEDIA.length / PER_ROW);
@@ -369,6 +444,20 @@
     e.preventDefault();
     const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     scrollTarget = Math.max(0, Math.min(scrollTarget + d * 0.8, maxScroll));
+  }, { passive: false });
+
+  // ── Touch scroll ──
+  let touchStartY = 0, touchScrollStart = 0;
+  window.addEventListener('touchstart', e => {
+    if (document.querySelector('.lb.is-open')) return;
+    touchStartY = e.touches[0].clientY;
+    touchScrollStart = scrollTarget;
+  }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    if (document.querySelector('.lb.is-open')) return;
+    e.preventDefault();
+    const dy = touchStartY - e.touches[0].clientY;
+    scrollTarget = Math.max(0, Math.min(touchScrollStart + dy * 1.2, maxScroll));
   }, { passive: false });
 
   // ── Drag to spin ──
@@ -473,6 +562,105 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLightbox();
   });
+
+  // ── Audio player ──
+  (function() {
+    const src = '../assets/audio/zone-of-interest-full.mp3';
+    const playBtn = document.getElementById('ap-play');
+    const waveformEl = document.getElementById('ap-waveform');
+    const canvas = waveformEl.querySelector('canvas');
+    const progressEl = document.getElementById('ap-progress');
+    const timeEl = document.getElementById('ap-time');
+    const audio = new Audio();
+    audio.preload = 'none';
+    audio.src = src;
+    let loaded = false;
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+
+    function drawWaveform(buffer) {
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      const data = buffer.getChannelData(0);
+      const bars = Math.floor(w / 2.5);
+      const step = Math.floor(data.length / bars);
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      for (let i = 0; i < bars; i++) {
+        let sum = 0;
+        for (let j = 0; j < step; j++) sum += Math.abs(data[i * step + j]);
+        const avg = sum / step;
+        const barH = Math.max(1, avg * h * 2.5);
+        ctx.fillRect(i * 2.5, (h - barH) / 2, 1, barH);
+      }
+    }
+
+    // Draw placeholder
+    (function() {
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      const bars = Math.floor(w / 2.5);
+      for (let i = 0; i < bars; i++) {
+        const barH = Math.random() * h * 0.6 + 1;
+        ctx.fillRect(i * 2.5, (h - barH) / 2, 1, barH);
+      }
+    })();
+
+    // Load real waveform
+    fetch(src)
+      .then(r => r.arrayBuffer())
+      .then(buf => new (window.AudioContext || window.webkitAudioContext)().decodeAudioData(buf))
+      .then(drawWaveform)
+      .catch(() => {});
+
+    playBtn.addEventListener('click', () => {
+      if (!loaded) { audio.load(); loaded = true; }
+      if (audio.paused) {
+        audio.play();
+        playBtn.innerHTML = '&#10074;&#10074;';
+      } else {
+        audio.pause();
+        playBtn.innerHTML = '&#9654;';
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressEl.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        timeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.innerHTML = '&#9654;';
+      progressEl.style.width = '0%';
+      timeEl.textContent = '0:00';
+    });
+
+    waveformEl.addEventListener('click', e => {
+      if (!loaded) { audio.load(); loaded = true; }
+      const rect = waveformEl.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      if (audio.duration) {
+        audio.currentTime = pct * audio.duration;
+        if (audio.paused) { audio.play(); playBtn.innerHTML = '&#10074;&#10074;'; }
+      }
+    });
+  })();
 
   // ── Cursor ──
   const cursor = document.createElement('div');

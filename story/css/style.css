@@ -2410,3 +2410,53 @@ body::before {
 .ap-play { background: none; border: none; color: var(--text); font-size: 11px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0; font-family: var(--font); }
 .ap-play:hover { color: #fff; }
 .ap-time { font-family: var(--font); font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+  html, body { cursor: auto; }
+  * { cursor: auto !important; }
+  .cursor { display: none !important; }
+
+  .panel { width: 100vw; min-width: 100vw; }
+
+  .topnav { padding: 12px 16px; }
+  .topnav-title { font-size: 12px; }
+  .tnav-btn { font-size: 8px; }
+
+  .hero-title { font-size: 14vw; }
+  .hero-byline { font-size: 12px; }
+
+  .intro-frag--tl, .intro-frag--br { font-size: 18px; }
+  .intro-meta { font-size: 8px; }
+
+  .synopsis-body { font-size: 13px; }
+  .dir-statement-title { font-size: 11px; }
+  .dir-statement-quote { font-size: 16px; }
+
+  .char-panel-name { font-size: 28px; }
+  .char-bio-desc { font-size: 12px; }
+  .char-panel-img { width: 40vw; }
+
+  .vt-title, .chars-video-title, .profile-heading { font-size: 32px; }
+
+  .vt-archive-text { padding: 20px; }
+  .vt-archive-grid { gap: 6px; }
+  .vt-thumb { min-width: 120px; }
+
+  .about-index-scroll { padding: 20px; }
+  .aix-label { font-size: 12px; }
+  .aix-body { font-size: 11px; }
+
+  .audio-players { grid-template-columns: 1fr; height: auto; }
+
+  .dir-vid { width: 35vw; height: 25vh; }
+  .dir-statement-bl, .dir-statement-body { padding: 16px; }
+
+  .house-text, .maze-text--left, .maze-text--right { padding: 16px; }
+
+  .panel-synopsis { flex-direction: column; }
+  .synopsis-video-col { width: 100%; height: 30vh; }
+  .synopsis-content { width: 100%; }
+}

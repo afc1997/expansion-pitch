@@ -42,6 +42,24 @@ window.addEventListener('wheel', e => {
   target = Math.max(0, Math.min(target + delta, getMaxScroll()));
 }, { passive: false });
 
+// Touch support for mobile
+let touchStartX = 0, touchStartY = 0, touchStartTarget = 0;
+window.addEventListener('touchstart', e => {
+  if (document.body.dataset.lightboxOpen) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchStartTarget = target;
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (document.body.dataset.lightboxOpen) return;
+  e.preventDefault();
+  const dx = touchStartX - e.touches[0].clientX;
+  const dy = touchStartY - e.touches[0].clientY;
+  const delta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+  target = Math.max(0, Math.min(touchStartTarget + delta * 1.5, getMaxScroll()));
+}, { passive: false });
+
 
 // ============================================================
 // NAVIGATION
