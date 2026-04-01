@@ -43,26 +43,33 @@ window.addEventListener('wheel', e => {
 }, { passive: false });
 
 // Touch support for mobile
-let touchLastX = 0, touchLastY = 0;
-window.addEventListener('touchstart', e => {
-  if (document.body.dataset.lightboxOpen) return;
-  touchLastX = e.touches[0].clientX;
-  touchLastY = e.touches[0].clientY;
-}, { passive: true });
+(function() {
+  let lastX = 0, lastY = 0, touching = false;
+  document.addEventListener('touchstart', function(e) {
+    if (document.body.dataset.lightboxOpen) return;
+    touching = true;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+  }, false);
 
-window.addEventListener('touchmove', e => {
-  if (document.body.dataset.lightboxOpen) return;
-  e.preventDefault();
-  const x = e.touches[0].clientX;
-  const y = e.touches[0].clientY;
-  const dx = touchLastX - x;
-  const dy = touchLastY - y;
-  // Use whichever axis has more movement
-  const delta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
-  target = Math.max(0, Math.min(target + delta * 2, getMaxScroll()));
-  touchLastX = x;
-  touchLastY = y;
-}, { passive: false });
+  document.addEventListener('touchmove', function(e) {
+    if (!touching || document.body.dataset.lightboxOpen) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var x = e.touches[0].clientX;
+    var y = e.touches[0].clientY;
+    var dx = lastX - x;
+    var dy = lastY - y;
+    var delta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+    target = Math.max(0, Math.min(target + delta * 2.5, getMaxScroll()));
+    lastX = x;
+    lastY = y;
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    touching = false;
+  }, false);
+})();
 
 
 // ============================================================
