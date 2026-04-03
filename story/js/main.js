@@ -34,13 +34,31 @@ function getMaxScroll() {
   return P1 + P2 + P3;
 }
 
+function getPanelOffsets() {
+  const panels = document.querySelectorAll('#h-track-1 .panel');
+  return Array.from(panels).map(p => p.offsetLeft);
+}
+
 window.addEventListener('wheel', e => {
   if (document.body.dataset.lightboxOpen) return;
   e.preventDefault();
-  // Prefer horizontal delta; fall back to vertical (standard mouse wheel)
   const delta = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
   target = Math.max(0, Math.min(target + delta, getMaxScroll()));
 }, { passive: false });
+
+// Arrow key navigation between panels
+document.addEventListener('keydown', e => {
+  if (document.body.dataset.lightboxOpen) return;
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  e.preventDefault();
+  const offsets = getPanelOffsets();
+  if (!offsets.length) return;
+  let idx = 0, minDist = Infinity;
+  offsets.forEach((o, i) => { const d = Math.abs(target - o); if (d < minDist) { minDist = d; idx = i; } });
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') idx = Math.min(idx + 1, offsets.length - 1);
+  else idx = Math.max(idx - 1, 0);
+  target = Math.max(0, Math.min(offsets[idx], getMaxScroll()));
+});
 
 // Touch support for mobile
 (function() {
