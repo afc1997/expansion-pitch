@@ -51,11 +51,45 @@ document.addEventListener('keydown', e => {
   if (document.body.dataset.lightboxOpen) return;
   if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
   e.preventDefault();
+  const forward = e.key === 'ArrowRight' || e.key === 'ArrowDown';
   const offsets = getPanelOffsets();
   if (!offsets.length) return;
   let idx = 0, minDist = Infinity;
   offsets.forEach((o, i) => { const d = Math.abs(target - o); if (d < minDist) { minDist = d; idx = i; } });
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') idx = Math.min(idx + 1, offsets.length - 1);
+
+  // On the last panel (About Index), scroll through its columns
+  const aboutScroll = document.querySelector('.panel-about-index .about-index-scroll');
+  if (aboutScroll && idx === offsets.length - 1) {
+    const cols = aboutScroll.querySelectorAll('.aix-col');
+    if (cols.length) {
+      const scrollLeft = aboutScroll.scrollLeft;
+      const maxScroll = aboutScroll.scrollWidth - aboutScroll.clientWidth;
+      if (forward && scrollLeft < maxScroll - 5) {
+        // Find next column to scroll to
+        for (const col of cols) {
+          const colLeft = col.offsetLeft - aboutScroll.offsetLeft - 60;
+          if (colLeft > scrollLeft + 5) {
+            aboutScroll.scrollTo({ left: colLeft, behavior: 'smooth' });
+            return;
+          }
+        }
+        return;
+      } else if (!forward && scrollLeft > 5) {
+        // Find previous column
+        for (let i = cols.length - 1; i >= 0; i--) {
+          const colLeft = cols[i].offsetLeft - aboutScroll.offsetLeft - 60;
+          if (colLeft < scrollLeft - 5) {
+            aboutScroll.scrollTo({ left: colLeft, behavior: 'smooth' });
+            return;
+          }
+        }
+        aboutScroll.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+  }
+
+  if (forward) idx = Math.min(idx + 1, offsets.length - 1);
   else idx = Math.max(idx - 1, 0);
   target = Math.max(0, Math.min(offsets[idx], getMaxScroll()));
 });

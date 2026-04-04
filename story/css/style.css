@@ -612,8 +612,8 @@ body::before {
 .synopsis-body {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
-  line-height: 1.7;
+  font-size: clamp(10px, 0.8vw, 13px);
+  line-height: 1.55;
   color: var(--dim);
   letter-spacing: 0.01em;
 }
@@ -1011,7 +1011,7 @@ body::before {
 .char-pair-body {
   font-family: var(--font);
   font-weight: 400;
-  font-size: clamp(12px, 0.95vw, 16px);
+  font-size: clamp(10px, 0.8vw, 13px);
   line-height: 1.55;
   color: #000;
   letter-spacing: 0.01em;
@@ -1036,7 +1036,7 @@ body::before {
 .dir-statement-label {
   font-family: var(--font);
   font-weight: 300;
-  font-size: clamp(14px, 1.4vw, 22px);
+  font-size: clamp(9px, 0.7vw, 11px);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--text);
@@ -1407,7 +1407,7 @@ body::before {
 .char-bio-note {
   font-family: var(--font);
   font-weight: 300;
-  font-size: clamp(12px, 0.95vw, 16px);
+  font-size: clamp(10px, 0.8vw, 13px);
   line-height: 1.55;
   color: var(--dim);
   letter-spacing: 0.01em;
@@ -2188,7 +2188,11 @@ body::before {
   height: 100%;
   padding: 100px 60px;
   align-items: flex-start;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
 }
+.about-index-scroll::-webkit-scrollbar { display: none; }
 
 .about-index-bio {
   padding: 0 0 20px;
