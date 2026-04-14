@@ -570,8 +570,25 @@ function initLoadingScreen() {
   let videosFullyLoaded = new Set();
   let currentPercent = 0;
 
-  // Track when all videos are canplaythrough (fully loaded)
+  // Force lazy-loaded videos to start loading
   allVideos.forEach(video => {
+    // Check for data-src on source elements
+    const sourceWithDataSrc = video.querySelector('source[data-src]');
+    if (sourceWithDataSrc) {
+      const dataSrc = sourceWithDataSrc.getAttribute('data-src');
+      sourceWithDataSrc.src = dataSrc;
+      sourceWithDataSrc.removeAttribute('data-src');
+    }
+
+    // Change preload attribute to force loading
+    if (video.preload === 'none') {
+      video.preload = 'auto';
+    }
+
+    // Start the load
+    video.load();
+
+    // Track when all videos are canplaythrough (fully loaded)
     video.addEventListener('canplaythrough', () => {
       videosFullyLoaded.add(video);
       updatePercent();
