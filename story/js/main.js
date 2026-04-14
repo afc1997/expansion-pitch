@@ -558,17 +558,60 @@ function updateContentInsets() {
 
 
 // ============================================================
-// LOADING SCREEN
+// LOADING SCREEN WITH PROGRESS
 // ============================================================
 function initLoadingScreen() {
   const loadingScreen = document.getElementById('loading-screen');
+  const percentEl = document.getElementById('loading-percent');
   if (!loadingScreen) return;
 
-  // Hide loading screen after initial videos load or timeout
+  // Get all videos that need to load
+  const allVideos = Array.from(document.querySelectorAll('video'));
+  const criticalVideos = [document.querySelector('.hero-video')].filter(Boolean);
+  let videosReady = new Set();
+  let currentPercent = 0;
+
+  // Track video loading progress
+  allVideos.forEach(video => {
+    video.addEventListener('canplay', () => {
+      videosReady.add(video);
+      updatePercent();
+    });
+    video.addEventListener('canplaythrough', () => {
+      videosReady.add(video);
+      updatePercent();
+    });
+  });
+
+  function updatePercent() {
+    const totalToTrack = Math.max(allVideos.length, 1);
+    const percent = Math.min(Math.round((videosReady.size / totalToTrack) * 100), 99);
+    currentPercent = Math.max(percent, currentPercent); // Only go up
+    if (percentEl) percentEl.textContent = currentPercent;
+  }
+
+  // Start at 5% immediately
+  if (percentEl) {
+    percentEl.textContent = '5';
+    currentPercent = 5;
+  }
+
+  // Gradually increase even if videos aren't loading (for slow connections)
+  let simulateProgress = 5;
+  const simInterval = setInterval(() => {
+    if (simulateProgress < currentPercent + 5) {
+      simulateProgress = Math.min(simulateProgress + Math.random() * 3, currentPercent + 10);
+      if (percentEl) percentEl.textContent = Math.round(simulateProgress);
+    }
+  }, 300);
+
+  // Hide loading screen when hero video is ready or at timeout
   function tryHideLoadingScreen() {
     const heroVideo = document.querySelector('.hero-video');
     if (heroVideo && heroVideo.readyState >= 2) {
-      // Hero video is ready to play
+      clearInterval(simInterval);
+      // Jump to 100%
+      if (percentEl) percentEl.textContent = '100';
       setTimeout(() => {
         loadingScreen.classList.add('hidden');
       }, 300);
@@ -583,9 +626,13 @@ function initLoadingScreen() {
     attempts++;
     if (tryHideLoadingScreen() || attempts >= 50) {
       clearInterval(checkInterval);
+      clearInterval(simInterval);
       // Force hide after 5 seconds regardless
+      if (percentEl) percentEl.textContent = '100';
       if (!loadingScreen.classList.contains('hidden')) {
-        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.classList.add('hidden');
+        }, 300);
       }
     }
   }, 100);
