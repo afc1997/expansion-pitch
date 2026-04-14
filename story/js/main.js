@@ -558,6 +558,41 @@ function updateContentInsets() {
 
 
 // ============================================================
+// LOADING SCREEN
+// ============================================================
+function initLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (!loadingScreen) return;
+
+  // Hide loading screen after initial videos load or timeout
+  function tryHideLoadingScreen() {
+    const heroVideo = document.querySelector('.hero-video');
+    if (heroVideo && heroVideo.readyState >= 2) {
+      // Hero video is ready to play
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+      }, 300);
+      return true;
+    }
+    return false;
+  }
+
+  // Check every 100ms up to 5 seconds
+  let attempts = 0;
+  const checkInterval = setInterval(() => {
+    attempts++;
+    if (tryHideLoadingScreen() || attempts >= 50) {
+      clearInterval(checkInterval);
+      // Force hide after 5 seconds regardless
+      if (!loadingScreen.classList.contains('hidden')) {
+        loadingScreen.classList.add('hidden');
+      }
+    }
+  }, 100);
+}
+
+
+// ============================================================
 // BOOT
 // ============================================================
 window.addEventListener('load', () => {
@@ -573,6 +608,7 @@ window.addEventListener('load', () => {
   initTitleHover();
   initIntroSups();
   initAudioPlayers();
+  initLoadingScreen();
   requestAnimationFrame(tick);
 });
 
