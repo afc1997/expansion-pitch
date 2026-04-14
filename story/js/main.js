@@ -567,27 +567,34 @@ function initLoadingScreen() {
 
   // Get all videos that need to load
   const allVideos = Array.from(document.querySelectorAll('video'));
-  const criticalVideos = [document.querySelector('.hero-video')].filter(Boolean);
-  let videosReady = new Set();
+  let videosFullyLoaded = new Set();
   let currentPercent = 0;
 
-  // Track video loading progress
+  // Track when all videos are canplaythrough (fully loaded)
   allVideos.forEach(video => {
-    video.addEventListener('canplay', () => {
-      videosReady.add(video);
-      updatePercent();
-    });
     video.addEventListener('canplaythrough', () => {
-      videosReady.add(video);
+      videosFullyLoaded.add(video);
       updatePercent();
+      checkIfAllLoaded();
     });
   });
 
   function updatePercent() {
     const totalToTrack = Math.max(allVideos.length, 1);
-    const percent = Math.min(Math.round((videosReady.size / totalToTrack) * 100), 99);
+    const percent = Math.min(Math.round((videosFullyLoaded.size / totalToTrack) * 100), 99);
     currentPercent = Math.max(percent, currentPercent); // Only go up
     if (percentEl) percentEl.textContent = currentPercent;
+  }
+
+  function checkIfAllLoaded() {
+    if (videosFullyLoaded.size === allVideos.length && allVideos.length > 0) {
+      // All videos are loaded
+      clearInterval(simInterval);
+      if (percentEl) percentEl.textContent = '100';
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+      }, 300);
+    }
   }
 
   // Start at 5% immediately
@@ -605,37 +612,13 @@ function initLoadingScreen() {
     }
   }, 300);
 
-  // Hide loading screen when hero video is ready or at timeout
-  function tryHideLoadingScreen() {
-    const heroVideo = document.querySelector('.hero-video');
-    if (heroVideo && heroVideo.readyState >= 2) {
-      clearInterval(simInterval);
-      // Jump to 100%
-      if (percentEl) percentEl.textContent = '100';
-      setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-      }, 300);
-      return true;
-    }
-    return false;
+  // Fallback: If no videos exist, hide immediately
+  if (allVideos.length === 0) {
+    if (percentEl) percentEl.textContent = '100';
+    setTimeout(() => {
+      loadingScreen.classList.add('hidden');
+    }, 300);
   }
-
-  // Check every 100ms up to 5 seconds
-  let attempts = 0;
-  const checkInterval = setInterval(() => {
-    attempts++;
-    if (tryHideLoadingScreen() || attempts >= 50) {
-      clearInterval(checkInterval);
-      clearInterval(simInterval);
-      // Force hide after 5 seconds regardless
-      if (percentEl) percentEl.textContent = '100';
-      if (!loadingScreen.classList.contains('hidden')) {
-        setTimeout(() => {
-          loadingScreen.classList.add('hidden');
-        }, 300);
-      }
-    }
-  }, 100);
 }
 
 
