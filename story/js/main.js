@@ -565,84 +565,32 @@ function initLoadingScreen() {
   const percentEl = document.getElementById('loading-percent');
   if (!loadingScreen) return;
 
-  // Get all videos that need to load
-  const allVideos = Array.from(document.querySelectorAll('video'));
-  let videosFullyLoaded = new Set();
-  let currentPercent = 0;
-
-  // Force lazy-loaded videos to start loading
-  allVideos.forEach(video => {
-    // Check for data-src on source elements
-    const sourceWithDataSrc = video.querySelector('source[data-src]');
-    if (sourceWithDataSrc) {
-      const dataSrc = sourceWithDataSrc.getAttribute('data-src');
-      sourceWithDataSrc.src = dataSrc;
-      sourceWithDataSrc.removeAttribute('data-src');
-    }
-
-    // Change preload attribute to force loading
-    if (video.preload === 'none') {
-      video.preload = 'auto';
-    }
-
-    // Start the load
-    video.load();
-
-    // Track when all videos are canplaythrough (fully loaded)
-    video.addEventListener('canplaythrough', () => {
-      videosFullyLoaded.add(video);
-      updatePercent();
-      checkIfAllLoaded();
-    });
-  });
-
-  function updatePercent() {
-    const totalToTrack = Math.max(allVideos.length, 1);
-    const percent = Math.min(Math.round((videosFullyLoaded.size / totalToTrack) * 100), 99);
-    currentPercent = Math.max(percent, currentPercent); // Only go up
-    if (percentEl) percentEl.textContent = currentPercent;
-  }
-
-  function checkIfAllLoaded() {
-    if (videosFullyLoaded.size === allVideos.length && allVideos.length > 0) {
-      // All videos are loaded
-      clearInterval(simInterval);
-      if (percentEl) percentEl.textContent = '100';
-      setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-      }, 300);
-    }
-  }
-
-  // Start at 5% immediately
-  if (percentEl) {
-    percentEl.textContent = '5';
-    currentPercent = 5;
-  }
-
-  // Gradually increase even if videos aren't loading (for slow connections)
-  let simulateProgress = 5;
-  const simInterval = setInterval(() => {
-    if (simulateProgress < currentPercent + 5) {
-      simulateProgress = Math.min(simulateProgress + Math.random() * 3, currentPercent + 10);
-      if (percentEl) percentEl.textContent = Math.round(simulateProgress);
-    }
-  }, 300);
-
-  // Fallback: If no videos exist, hide immediately
-  if (allVideos.length === 0) {
-    if (percentEl) percentEl.textContent = '100';
-    setTimeout(() => {
-      loadingScreen.classList.add('hidden');
-    }, 300);
-  }
-
-  // Hard timeout: never block the user for more than 8 seconds
-  setTimeout(() => {
-    clearInterval(simInterval);
+  function dismiss() {
     if (percentEl) percentEl.textContent = '100';
     loadingScreen.classList.add('hidden');
-  }, 8000);
+  }
+
+  // Only wait for the hero video (preload="auto", no data-src).
+  // All other videos are loaded lazily as the user scrolls — forcing them
+  // all at once killed slow connections and prevented the site from showing.
+  const heroVideo = document.querySelector('video[preload="auto"], video:not([preload="none"])');
+
+  if (!heroVideo) { dismiss(); return; }
+
+  // Animate percent while hero buffers
+  let pct = 5;
+  if (percentEl) percentEl.textContent = pct;
+  const ticker = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 4, 90);
+    if (percentEl) percentEl.textContent = Math.round(pct);
+  }, 200);
+
+  function done() { clearInterval(ticker); dismiss(); }
+
+  heroVideo.addEventListener('canplaythrough', done, { once: true });
+
+  // Hard cap: never block for more than 5 seconds regardless
+  setTimeout(done, 5000);
 }
 
 
