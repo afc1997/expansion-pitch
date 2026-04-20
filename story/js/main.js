@@ -636,6 +636,13 @@ function initLoadingScreen() {
       loadingScreen.classList.add('hidden');
     }, 300);
   }
+
+  // Hard timeout: never block the user for more than 8 seconds
+  setTimeout(() => {
+    clearInterval(simInterval);
+    if (percentEl) percentEl.textContent = '100';
+    loadingScreen.classList.add('hidden');
+  }, 8000);
 }
 
 
